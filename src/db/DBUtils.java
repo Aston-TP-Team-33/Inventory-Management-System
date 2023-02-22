@@ -1,5 +1,6 @@
 package db;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -43,6 +44,7 @@ public class DBUtils {
 		stage.setScene(new Scene(root, 600, 400));
 		stage.show();
 	}
+
 	
 	/**
 	 * Checks if user exists, if they are an admin and logs them into the program.
@@ -60,6 +62,7 @@ public class DBUtils {
 		
 		try {
 			// Connect to database
+			//TODO host database
 			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
 			
 			// Query user
@@ -93,7 +96,7 @@ public class DBUtils {
 				return;
 			}
 			
-			DBUtils.changeScene(event, "Test", "../application/test.fxml");
+			DBUtils.changeScene(event, "Test", "../application/SideNavigation.fxml");
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

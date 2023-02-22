@@ -9,11 +9,9 @@ import javafx.scene.Scene;
 public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
-		// Setup GUI
 		try {
 	        FXMLLoader loader = new FXMLLoader(getClass().getResource("../login/login.fxml"));
 	        Parent root = loader.load();
-			//scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 	        Scene scene = new Scene(root);
 			primaryStage.setScene(scene);
 			primaryStage.show();
