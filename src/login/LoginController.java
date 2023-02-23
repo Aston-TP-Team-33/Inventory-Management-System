@@ -8,6 +8,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
+/**
+ * @author Remy Thompson
+ *
+ */
 public class LoginController {
 	@FXML
 	TextField usernameField;

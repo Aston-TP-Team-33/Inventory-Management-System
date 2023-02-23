@@ -9,6 +9,10 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 
+/**
+ * @author Remy Thompson
+ *
+ */
 public class SidebarController {
 
     @FXML
@@ -42,7 +46,10 @@ public class SidebarController {
     	loadPage("inventory");
     }
     
-    //TODO use DBUtils?
+    /**
+     * Loads the replace the current page with the page the user clicked on
+     * @param page - name of the page to load
+     */
     private void loadPage(String page) {
     	Parent root = null;
     	
