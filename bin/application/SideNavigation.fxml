@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<BorderPane fx:id="bp" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.SidebarController">
+<BorderPane fx:id="bp" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.SidebarController">
    <left>
       <VBox prefHeight="400.0" prefWidth="123.0" style="-fx-background-color: #0D1824;" BorderPane.alignment="CENTER">
          <children>
@@ -39,7 +39,7 @@
       </VBox>
    </left>
    <center>
-      <AnchorPane fx:id="ap" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: #14242B;" BorderPane.alignment="CENTER">
+      <AnchorPane fx:id="ap" prefHeight="400.0" prefWidth="800.0" style="-fx-background-color: #14242B;" BorderPane.alignment="CENTER">
          <children>
             <Text fill="WHITE" layoutX="200.0" layoutY="211.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Home">
                <font>
