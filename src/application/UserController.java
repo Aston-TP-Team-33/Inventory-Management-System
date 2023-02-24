@@ -9,9 +9,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -90,25 +90,76 @@ public class UserController implements Initializable {
     		return;
     	}
     	
-    	DBUtils.addUserToDatabase(fullName, email, username, password, role);
+    	DBUtils.addUser(fullName, email, username, password, role);
     	
-    	fullNameField.setText("");
-    	usernameField.setText("");
-    	passwordField.setText("");
-    	emailField.setText("");
-    	roleField.setValue(null);
-    	
+
+    	resetFields();
     	updateTable();
     }
 
-    @FXML
+	@FXML
     void update(ActionEvent event) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 
+		User user = table.getSelectionModel().getSelectedItem();
+		
+		// Make sure user is selected
+    	if(user == null) {
+			alert.setContentText("Please select a user.");
+			alert.show();
+    		return;
+    	}
+		
+		Integer id = user.getId();
+    	String fullName = fullNameField.getText();
+    	String username = usernameField.getText();
+    	String password = passwordField.getText();
+    	String email = emailField.getText();
+    	Integer role = roleField.getValue();
+    	
+    	// Make sure form was filled
+    	if(fullName.equals("") || username.equals("") || password.equals("") || email.equals("") || role == null) {
+			alert.setContentText("Please fill the form.");
+			alert.show();
+    		return;
+    	}
+    	
+    	DBUtils.updateUser(id, fullName, email, username, password, role);
+    	
+
+    	resetFields();
+    	updateTable();
     }
 
+    /**
+     * Removes selected user from database and table
+     * @param event
+     */
     @FXML
     void delete(ActionEvent event) {
-
+    	User user = table.getSelectionModel().getSelectedItem();
+    	
+    	// If no user is selected display an error
+    	if(user == null) {
+    		Alert alert = new Alert(Alert.AlertType.ERROR);
+    		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+    		alert.setContentText("Please select an item from the table");
+    		alert.show();
+    		return;
+    	}
+    	
+    	Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		alert.setHeaderText("Are you sure?");
+		alert.setContentText("Are you sure you would like to delete " + user.getUsername() + " from the table?");
+		
+		if(alert.showAndWait().get() == ButtonType.OK) {
+			DBUtils.removeUser(user.getId());
+		}
+		
+		resetFields();
+		updateTable();
     }
     
     /**
@@ -126,6 +177,17 @@ public class UserController implements Initializable {
     	
     	table.setItems(users);
     }
+    
+    /**
+     * Resets input fields to empty
+     */
+    private void resetFields() {
+    	fullNameField.setText("");
+    	usernameField.setText("");
+    	passwordField.setText("");
+    	emailField.setText("");
+    	roleField.setValue(null);	
+	}
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
@@ -135,17 +197,15 @@ public class UserController implements Initializable {
 		
 		// Setup table
 		// Update text fields on click
-		table.setRowFactory((TableView<User> tv) ->{
-			TableRow<User> row = new TableRow<>();
-			row.setOnMouseClicked((MouseEvent event) ->{
-				User user = table.getSelectionModel().getSelectedItem();
+		table.setOnMouseClicked((MouseEvent event) ->{
+			User user = table.getSelectionModel().getSelectedItem();
+			if(user != null) {
 				fullNameField.setText(user.getFullName());
 				usernameField.setText(user.getUsername());
 				emailField.setText(user.getEmail());
 				roleField.setValue(user.getRole());
-				passwordField.setText(user.getPassword());
-			});
-			return row;
+				passwordField.setText(user.getPassword());					
+			}
 		});
 		
 		updateTable();

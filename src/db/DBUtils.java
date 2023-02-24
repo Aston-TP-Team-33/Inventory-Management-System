@@ -120,7 +120,7 @@ public class DBUtils {
 	 * @param password - password entered into the password field
 	 * @param role - role selected 
 	 */
-	public static void addUserToDatabase(String name, String email, String username, String password, int role) {
+	public static void addUser(String name, String email, String username, String password, int role) {
 		Connection connection = null;
 		PreparedStatement addUser = null;
 		
@@ -194,5 +194,59 @@ public class DBUtils {
 		}
 
 		return users;
+	}
+
+
+	public static void removeUser(int id) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		
+		Connection connection = null;
+		PreparedStatement deleteUser = null;
+		// Connect to database
+		//TODO connect to host database
+		try {
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			
+			// Prepare statement to add user
+			deleteUser = connection.prepareStatement("DELETE FROM user WHERE `user`.`user_id` = ?");
+			deleteUser.setInt(1, id);
+			
+			// Delete user from
+			deleteUser.executeUpdate();	
+		} catch (SQLException e) {
+			alert.setContentText(e.getMessage());
+			alert.show();
+		}catch(Exception e) {
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}
+	}
+
+
+	public static void updateUser(Integer id, String fullName, String email, String username, String password, Integer role) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		
+		Connection connection = null;
+		PreparedStatement updateUser = null;
+		// Connect to database
+		//TODO connect to host database
+		try {
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			
+			// Prepare statement to add user
+			updateUser = connection.prepareStatement("UPDATE `user` SET `full_name` = ?, `email` = ?, `username` = ?, `password` = tr, `role` = ? WHERE `user`.`user_id` = ?;");
+			
+			// Update user 
+			updateUser.executeUpdate();	
+		} catch (SQLException e) {
+			alert.setContentText(e.getMessage());
+			alert.show();
+		}catch(Exception e) {
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}
+		
 	}
 }

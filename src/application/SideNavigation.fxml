@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.image.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
@@ -41,9 +42,14 @@
    <center>
       <AnchorPane fx:id="ap" prefHeight="400.0" prefWidth="800.0" style="-fx-background-color: #14242B;" translateX="1.0" translateY="1.0" translateZ="1.0" BorderPane.alignment="CENTER">
          <children>
-            <Text fill="WHITE" layoutX="200.0" layoutY="211.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Home">
+            <Text fill="WHITE" layoutX="-268.0" layoutY="41.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Home" x="341.0" y="14.0">
                <font>
-                  <Font size="29.0" />
+                  <Font name="Arial Black" size="37.0" />
+               </font>
+            </Text>
+            <Text fill="WHITE" layoutX="132.0" layoutY="109.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome to the Gadget Galaxy Inventory Management System! Please use the bar on the left to navigate the application. If you'd like to edit or delete an entry from the database please select it from the table on the right of each page." wrappingWidth="436.30859375">
+               <font>
+                  <Font size="16.0" />
                </font>
             </Text>
          </children>
