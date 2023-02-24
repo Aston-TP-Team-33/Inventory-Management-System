@@ -11,9 +11,11 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 
 /**
@@ -127,8 +129,25 @@ public class UserController implements Initializable {
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
+		// Setup role selection
 		Integer[] options = {0, 1};
 		roleField.getItems().addAll(options);
+		
+		// Setup table
+		// Update text fields on click
+		table.setRowFactory((TableView<User> tv) ->{
+			TableRow<User> row = new TableRow<>();
+			row.setOnMouseClicked((MouseEvent event) ->{
+				User user = table.getSelectionModel().getSelectedItem();
+				fullNameField.setText(user.getFullName());
+				usernameField.setText(user.getUsername());
+				emailField.setText(user.getEmail());
+				roleField.setValue(user.getRole());
+				passwordField.setText(user.getPassword());
+			});
+			return row;
+		});
+		
 		updateTable();
 	}
 
