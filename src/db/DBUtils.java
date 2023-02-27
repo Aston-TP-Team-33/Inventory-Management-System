@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import application.Order;
+import application.Product;
 import application.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -236,10 +238,157 @@ public class DBUtils {
 			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
 			
 			// Prepare statement to add user
-			updateUser = connection.prepareStatement("UPDATE `user` SET `full_name` = ?, `email` = ?, `username` = ?, `password` = tr, `role` = ? WHERE `user`.`user_id` = ?;");
+			updateUser = connection.prepareStatement("UPDATE `user` SET `full_name` = ?, `email` = ?, `username` = ?, `password` = ?, `role` = ? WHERE `user`.`user_id` = ?;");
 			
+			updateUser.setString(1, fullName);
+			updateUser.setString(2, email);
+			updateUser.setString(3, username);
+			updateUser.setString(4, password);
+			updateUser.setInt(5, role);
+			updateUser.setInt(6, id);
+
 			// Update user 
 			updateUser.executeUpdate();	
+		} catch (SQLException e) {
+			alert.setContentText(e.getMessage());
+			alert.show();
+		}catch(Exception e) {
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}	
+	}
+	
+	public static ObservableList<Order> getOrders() {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		
+		Connection connection = null;
+		Statement getOrders = null;
+			
+		ObservableList<Order> orders = FXCollections.observableArrayList();
+		
+		try {
+			// Connect to database
+			//TODO connect to host database
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");	
+			
+			// Query users
+			getOrders = connection.createStatement();
+			ResultSet rs = getOrders.executeQuery("SELECT * FROM orders");
+			
+			// Add users to list
+			while(rs.next()) {
+				Order order = new Order();
+				order.setOrder_date(rs.getDate("order_date"));
+				order.setStatus(rs.getString("status"));
+				order.setTotal(rs.getFloat("total"));
+				order.setUser_id(rs.getInt("user_id"));
+				order.setOrder_id(rs.getInt("order_id"));
+				
+				orders.add(order);
+			}					
+		} catch(SQLException e) {
+			e.printStackTrace();
+			alert.setContentText(e.getMessage());
+			alert.show();
+		} catch(Exception e) {
+			e.printStackTrace();
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}
+
+		return orders;
+	}
+	
+	public static void removeOrder(int id) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		
+		Connection connection = null;
+		PreparedStatement deleteOrder = null;
+		// Connect to database
+		//TODO connect to host database
+		try {
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			
+			// Prepare statement to add user
+			deleteOrder = connection.prepareStatement("DELETE FROM orders WHERE order_id = ?");
+			deleteOrder.setInt(1, id);
+			
+			// Delete order from database
+			deleteOrder.executeUpdate();	
+		} catch (SQLException e) {
+			alert.setContentText(e.getMessage());
+			alert.show();
+		}catch(Exception e) {
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}
+	}
+	
+	public static ObservableList<Product> seeProducts(int id) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		
+		// Connect to database
+		//TODO connect to host database
+		Connection connection = null;
+		PreparedStatement getProducts = null;
+		
+		ObservableList<Product> products = FXCollections.observableArrayList();
+		
+		try {
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");		
+			
+			// Prepare statement to get products associated with current order
+			getProducts = connection.prepareStatement("SELECT * FROM product INNER JOIN order_item WHERE product.product_id = order_item.product_id AND order_item.order_id = ?;");
+			getProducts.setInt(1, id);
+			ResultSet rs = getProducts.executeQuery();
+			
+			while(rs.next()) {
+				Product product = new Product(
+						rs.getInt("product_id"),
+						rs.getInt("inventory_id"),
+						rs.getString("name"),
+						rs.getInt("price"),
+						rs.getString("category"),
+						rs.getString("description"),
+						rs.getString("image")
+				);
+				
+				products.add(product);
+			}
+		} catch (SQLException e) {
+			alert.setContentText(e.getMessage());
+			alert.show();
+		}catch(Exception e) {
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}
+		
+		return products;
+	}
+
+
+	public static void updateOrder(String status, int id) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		
+		Connection connection = null;
+		PreparedStatement updateOrder = null;
+		// Connect to database
+		//TODO connect to host database
+		try {
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			
+			// Prepare statement to add order
+			updateOrder = connection.prepareStatement("UPDATE `orders` SET `status` = ? WHERE order_id = ?;");
+			
+			updateOrder.setString(1, status);
+			updateOrder.setInt(2, id);
+
+			// Update order 
+			updateOrder.executeUpdate();	
 		} catch (SQLException e) {
 			alert.setContentText(e.getMessage());
 			alert.show();

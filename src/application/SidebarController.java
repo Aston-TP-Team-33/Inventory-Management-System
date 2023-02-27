@@ -45,7 +45,7 @@ public class SidebarController {
     void inventoryPage(MouseEvent  event) {
     	loadPage("inventory");
     }
-    
+
     /**
      * Loads the replace the current page with the page the user clicked on
      * @param page - name of the page to load
