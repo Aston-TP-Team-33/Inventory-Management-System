@@ -4,12 +4,13 @@ public class Product {
 	private int productId;
 	private int inventoryId;
 	private String name;
-	private int price;
+	private float price;
 	private String category;
 	private String description;
 	private String image;
+	private int stock;
 	
-	public Product(int productId, int inventoryId, String name, int price, String category, String description, String image) {
+	public Product(int productId, int inventoryId, String name, float price, String category, String description, String image, int stock) {
 		this.productId = productId;
 		this.inventoryId = inventoryId;
 		this.name = name;
@@ -17,6 +18,7 @@ public class Product {
 		this.category = category;
 		this.description = description;
 		this.image = image;
+		this.stock = stock;
 	}
 	
 	public int getProductId() {
@@ -37,10 +39,10 @@ public class Product {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public int getPrice() {
+	public float getPrice() {
 		return price;
 	}
-	public void setPrice(int price) {
+	public void setPrice(float price) {
 		this.price = price;
 	}
 	public String getCategory() {
@@ -61,4 +63,7 @@ public class Product {
 	public void setImage(String image) {
 		this.image = image;
 	}	
+	public int getStock() {
+		return stock;
+	}
 }

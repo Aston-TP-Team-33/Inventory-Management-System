@@ -204,7 +204,7 @@ public class UserController implements Initializable {
 				usernameField.setText(user.getUsername());
 				emailField.setText(user.getEmail());
 				roleField.setValue(user.getRole());
-				passwordField.setText(user.getPassword());					
+				passwordField.setText(user.getPassword());	
 			}
 		});
 		

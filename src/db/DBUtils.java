@@ -341,7 +341,7 @@ public class DBUtils {
 			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");		
 			
 			// Prepare statement to get products associated with current order
-			getProducts = connection.prepareStatement("SELECT * FROM product INNER JOIN order_item WHERE product.product_id = order_item.product_id AND order_item.order_id = ?;");
+			getProducts = connection.prepareStatement("SELECT * FROM product INNER JOIN order_item INNER JOIN inventory WHERE product.product_id = order_item.product_id AND product.inventory_id = inventory.inventory_id AND order_item.order_id = ?;");
 			getProducts.setInt(1, id);
 			ResultSet rs = getProducts.executeQuery();
 			
@@ -350,10 +350,11 @@ public class DBUtils {
 						rs.getInt("product_id"),
 						rs.getInt("inventory_id"),
 						rs.getString("name"),
-						rs.getInt("price"),
+						rs.getFloat("price"),
 						rs.getString("category"),
 						rs.getString("description"),
-						rs.getString("image")
+						rs.getString("image"),
+						rs.getInt("quantity")
 				);
 				
 				products.add(product);
@@ -389,6 +390,175 @@ public class DBUtils {
 
 			// Update order 
 			updateOrder.executeUpdate();	
+		} catch (SQLException e) {
+			alert.setContentText(e.getMessage());
+			alert.show();
+		}catch(Exception e) {
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}
+		
+	}
+	
+	/**
+	 * Returns all the products currently in the database
+	 * @return an ObervableList of products
+	 */
+	public static ObservableList<Product> getProducts(){
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		
+		Connection connection = null;
+		Statement getProducts = null;
+			
+		ObservableList<Product> products = FXCollections.observableArrayList();
+		
+		try {
+			// Connect to database
+			//TODO connect to host database
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");	
+			
+			// Query products
+			getProducts = connection.createStatement();
+			ResultSet rs = getProducts.executeQuery("SELECT * FROM product INNER JOIN inventory WHERE product.inventory_id = inventory.inventory_id;");
+			
+			// Add products to list
+			while(rs.next()) {
+				Product product = new Product(
+						rs.getInt("product_id"),
+						rs.getInt("inventory_id"),
+						rs.getString("name"),
+						rs.getFloat("price"),
+						rs.getString("category"),
+						rs.getString("description"),
+						rs.getString("image"),
+						rs.getInt("quantity")
+				);
+				
+				products.add(product);
+			}
+		} catch(SQLException e) {
+			alert.setContentText(e.getMessage());
+			alert.show();
+		} catch(Exception e) {
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}
+
+		return products;
+	}
+
+	/**
+	 * Adds a new product to the database
+	 * @param name - name entered into the text field
+	 * @param price - price enter into the price field 
+	 * @param category - category entered into the category field
+	 * @param description - description entered into the description field
+	 * @param role - role selected 
+	 */
+	public static void addProduct(String name, Float price, String category, String description, String image, int stock) {
+		Connection connection = null;
+		PreparedStatement addProduct = null;
+		PreparedStatement addInventory = null;
+		
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		
+		// Connect to database
+		//TODO connect to host database
+		try {
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			// Insert into inventory
+			addInventory = connection.prepareStatement("INSERT INTO `inventory` (`inventory_id`, `quantity`) VALUES (NULL, ?)", Statement.RETURN_GENERATED_KEYS);
+			addInventory.setInt(1, stock);
+			addInventory.executeUpdate();
+			Integer inventoryId = null;
+			
+	        try (ResultSet generatedKeys = addInventory.getGeneratedKeys()) {
+	            if (generatedKeys.next()) {
+	                inventoryId = generatedKeys.getInt(1);
+	            }
+	           }
+
+			
+			// Prepare statement to add user
+			addProduct = connection.prepareStatement("INSERT INTO `product` (`product_id`, `inventory_id`, `name`, `price`, `category`, `description`, `image`) VALUES (NULL, ?, ?, ?, ?, ?, ?);");
+			
+			addProduct.setInt(1, inventoryId);
+			addProduct.setString(2, name);
+			addProduct.setFloat(3, price);
+			addProduct.setString(4, category);
+			addProduct.setString(5, description);
+			addProduct.setString(6, image);
+			
+			// Add user to database
+			addProduct.executeUpdate();	
+		} catch (SQLException e) {
+			alert.setContentText(e.getMessage());
+			alert.show();
+		}
+		catch(Exception e) {
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}
+	}
+	
+	public static void deleteProduct(int id) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		
+		Connection connection = null;
+		PreparedStatement deleteProduct = null;
+		
+		// Connect to database
+		//TODO connect to host database
+		try {
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			
+			// Delete from inventory table - this will automatically delete it from the product table also
+			deleteProduct = connection.prepareStatement("DELETE FROM inventory WHERE inventory_id = ?");
+			deleteProduct.setInt(1, id);
+						
+			// Delete order from database
+			deleteProduct.executeUpdate();	
+		} catch (SQLException e) {
+			alert.setContentText(e.getMessage());
+			alert.show();
+		}catch(Exception e) {
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}
+	}
+	
+	public static void updateProduct(String name, float price, String category, String description, String image, int stock, int inventoryId) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		
+		Connection connection = null;
+		PreparedStatement updateProduct = null;
+		PreparedStatement updateInventory = null; 
+		
+		// Connect to database
+		//TODO connect to host database
+		try {
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			
+			// Prepare statement to update tables
+			updateProduct = connection.prepareStatement("UPDATE `product` SET `name` = ?, `price` = ?, `category` = ?, `description` = ?, `image` = ? WHERE inventory_id = ?;");
+			updateInventory = connection.prepareStatement("UPDATE `inventory` SET quantity = ? WHERE inventory_id = ?");
+			
+			updateProduct.setString(1, name);
+			updateProduct.setFloat(2, price);
+			updateProduct.setString(3, category);
+			updateProduct.setString(4, description);
+			updateProduct.setString(5, image);
+			updateProduct.setInt(6, inventoryId);
+			
+			updateInventory.setInt(1, stock);
+			updateInventory.setInt(2, inventoryId);
+			
+			updateProduct.executeUpdate();	
+			updateInventory.executeUpdate();
 		} catch (SQLException e) {
 			alert.setContentText(e.getMessage());
 			alert.show();
