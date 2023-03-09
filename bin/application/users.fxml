@@ -20,11 +20,6 @@
                   <Font size="18.0" />
                </font>
             </Label>
-            <Label layoutX="14.0" layoutY="114.0" text="Username" textFill="WHITE">
-               <font>
-                  <Font size="18.0" />
-               </font>
-            </Label>
             <Label layoutX="16.0" layoutY="14.0" text="Email" textFill="WHITE">
                <font>
                   <Font size="18.0" />
@@ -42,7 +37,6 @@
             </Label>
             <TextField fx:id="emailField" layoutX="99.0" layoutY="15.0" />
             <TextField fx:id="fullNameField" layoutX="99.0" layoutY="65.0" />
-            <TextField fx:id="usernameField" layoutX="101.0" layoutY="115.0" />
             <TextField fx:id="passwordField" layoutX="99.0" layoutY="165.0" />
             <Button fx:id="btnAdd" layoutX="25.0" layoutY="306.0" mnemonicParsing="false" onAction="#add" text="Add" />
             <Button fx:id="btnUpdate" layoutX="115.0" layoutY="306.0" mnemonicParsing="false" onAction="#update" text="Update" />
@@ -54,8 +48,7 @@
         <columns>
           <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID" />
           <TableColumn fx:id="emailColumn" prefWidth="75.0" text="Email" />
-            <TableColumn fx:id="fullNameColumn" prefWidth="75.0" text="Full Name" />
-            <TableColumn fx:id="usernameColumn" prefWidth="75.0" text="Username" />
+            <TableColumn fx:id="fullNameColumn" prefWidth="75.0" text="Name" />
             <TableColumn fx:id="passwordColumn" prefWidth="75.0" text="Password" />
             <TableColumn fx:id="roleColumn" prefWidth="75.0" text="Role" />
         </columns>

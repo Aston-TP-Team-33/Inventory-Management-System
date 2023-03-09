@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
+import at.favre.lib.crypto.bcrypt.BCrypt.Verifyer;
 import application.Order;
 import application.Product;
 import application.User;
@@ -56,10 +58,10 @@ public class DBUtils {
 	/**
 	 * Checks if user exists, if they are an admin and logs them into the program.
 	 * @param event - Event that caused the method to run
-	 * @param username - username entered into the text field
+	 * @param name - username entered into the text field
 	 * @param password - password entered into the password field
 	 */
-	public static void loginUser(ActionEvent event, String username, String password) {
+	public static void loginUser(ActionEvent event, String email, String password) {
 		Connection connection = null;
 		PreparedStatement checkLoginCredentials = null;
 		ResultSet resultSet = null;
@@ -70,13 +72,14 @@ public class DBUtils {
 		try {
 			// Connect to database
 			//TODO connect to host database
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			
 			// Query user
-			checkLoginCredentials = connection.prepareStatement("SELECT password, role FROM user WHERE username = ?;");
-			checkLoginCredentials.setString(1, username);
+			checkLoginCredentials = connection.prepareStatement("SELECT password, type FROM users WHERE email = ?;");
+			checkLoginCredentials.setString(1, email);
 			
 			resultSet = checkLoginCredentials.executeQuery();
+			
 			
 			// If user does not exist then display an error
 			if(!resultSet.isBeforeFirst()) {
@@ -87,22 +90,24 @@ public class DBUtils {
 			
 			resultSet.next();
 			String retrievedPassword = resultSet.getString("password");
-			int retrievedRole = resultSet.getInt("role");
-						
-			// Check password
-			if(!password.equals(retrievedPassword)) {
+			int retrievedType = resultSet.getInt("type");
+									
+			Verifyer v = BCrypt.verifyer();
+			
+			// Check password by comparing the entered password to the password from the database 
+			if(!v.verify(password.toCharArray(), retrievedPassword.toCharArray()).verified) {
 				alert.setContentText("Incorrect login credentials please try again.");
 				alert.show();
 				return;
 			}
 			
 			// Check role
-			if(retrievedRole != 1) {
+			if(retrievedType != 1) {
 				alert.setContentText("You are not an admin. Please contact an administrator to upgrade your role.");
 				alert.show();
 				return;
 			}
-			
+	
 			DBUtils.changeScene(event, "Test", "../application/SideNavigation.fxml");
 		} catch (SQLException e) {
 			alert.setContentText(e.getMessage());
@@ -122,7 +127,7 @@ public class DBUtils {
 	 * @param password - password entered into the password field
 	 * @param role - role selected 
 	 */
-	public static void addUser(String name, String email, String username, String password, int role) {
+	public static void addUser(String name, String email, String password, int type) {
 		Connection connection = null;
 		PreparedStatement addUser = null;
 		
@@ -132,15 +137,17 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			
+			// Hash users password 
+			String hashedPassword = BCrypt.withDefaults().hashToString(10, password.toCharArray());
 			
 			// Prepare statement to add user
-			addUser = connection.prepareStatement("INSERT INTO `user` (`user_id`, `full_name`, `email`, `username`, `password`, `role`) VALUES (NULL, ?, ?, ?, ?, ?);");
+			addUser = connection.prepareStatement("INSERT INTO `users` (`name`, `email`, `password`, `type`) VALUES (?, ?, ?, ?);");
 			addUser.setString(1, name);
 			addUser.setString(2, email);
-			addUser.setString(3, username);
-			addUser.setString(4, password);
-			addUser.setString(5, Integer.toString(role));
+			addUser.setString(3, hashedPassword);
+			addUser.setString(4, Integer.toString(type));
 			
 			// Add user to database
 			addUser.executeUpdate();	
@@ -170,21 +177,21 @@ public class DBUtils {
 		try {
 			// Connect to database
 			//TODO connect to host database
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");	
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
 			
 			// Query users
 			getUsers = connection.createStatement();
-			ResultSet rs = getUsers.executeQuery("SELECT * FROM user");
+			ResultSet rs = getUsers.executeQuery("SELECT * FROM users");
 			
 			// Add users to list
 			while(rs.next()) {
-				User user = new User();
-				user.setId(rs.getInt("user_id"));
-				user.setFullName(rs.getString("full_name"));
-				user.setEmail(rs.getString("email"));
-				user.setUsername(rs.getString("username"));
-				user.setPassword(rs.getString("password"));
-				user.setRole(rs.getInt("role"));
+				int id = rs.getInt("id");
+				String name = rs.getString("name");
+				String email = rs.getString("email");
+				String password = rs.getString("password");
+				int type = rs.getInt("type");
+				
+				User user = new User(name, email, password, type, id);
 				users.add(user);
 			}			
 		} catch(SQLException e) {
@@ -208,10 +215,10 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			
 			// Prepare statement to add user
-			deleteUser = connection.prepareStatement("DELETE FROM user WHERE `user`.`user_id` = ?");
+			deleteUser = connection.prepareStatement("DELETE FROM users WHERE id = ?");
 			deleteUser.setInt(1, id);
 			
 			// Delete user from
@@ -226,7 +233,7 @@ public class DBUtils {
 	}
 
 
-	public static void updateUser(Integer id, String fullName, String email, String username, String password, Integer role) {
+	public static void updateUser(Integer id, String name, String email, String password, Integer type) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		
@@ -235,17 +242,19 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			
 			// Prepare statement to add user
-			updateUser = connection.prepareStatement("UPDATE `user` SET `full_name` = ?, `email` = ?, `username` = ?, `password` = ?, `role` = ? WHERE `user`.`user_id` = ?;");
+			updateUser = connection.prepareStatement("UPDATE users SET `name` = ?, `email` = ?, `password` = ?, `type` = ? WHERE id = ?;");
 			
-			updateUser.setString(1, fullName);
+			// Hash Password 
+			String hashedPassword = BCrypt.withDefaults().hashToString(10, password.toCharArray());
+			
+			updateUser.setString(1, name);
 			updateUser.setString(2, email);
-			updateUser.setString(3, username);
-			updateUser.setString(4, password);
-			updateUser.setInt(5, role);
-			updateUser.setInt(6, id);
+			updateUser.setString(3, hashedPassword);
+			updateUser.setInt(4, type);
+			updateUser.setInt(5, id);
 
 			// Update user 
 			updateUser.executeUpdate();	
@@ -270,7 +279,7 @@ public class DBUtils {
 		try {
 			// Connect to database
 			//TODO connect to host database
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");	
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
 			
 			// Query users
 			getOrders = connection.createStatement();
@@ -309,7 +318,7 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			
 			// Prepare statement to add user
 			deleteOrder = connection.prepareStatement("DELETE FROM orders WHERE order_id = ?");
@@ -338,7 +347,7 @@ public class DBUtils {
 		ObservableList<Product> products = FXCollections.observableArrayList();
 		
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");		
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");		
 			
 			// Prepare statement to get products associated with current order
 			getProducts = connection.prepareStatement("SELECT * FROM product INNER JOIN order_item INNER JOIN inventory WHERE product.product_id = order_item.product_id AND product.inventory_id = inventory.inventory_id AND order_item.order_id = ?;");
@@ -380,7 +389,7 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			
 			// Prepare statement to add order
 			updateOrder = connection.prepareStatement("UPDATE `orders` SET `status` = ? WHERE order_id = ?;");
@@ -416,7 +425,7 @@ public class DBUtils {
 		try {
 			// Connect to database
 			//TODO connect to host database
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");	
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
 			
 			// Query products
 			getProducts = connection.createStatement();
@@ -467,7 +476,7 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			// Insert into inventory
 			addInventory = connection.prepareStatement("INSERT INTO `inventory` (`inventory_id`, `quantity`) VALUES (NULL, ?)", Statement.RETURN_GENERATED_KEYS);
 			addInventory.setInt(1, stock);
@@ -513,7 +522,7 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			
 			// Delete from inventory table - this will automatically delete it from the product table also
 			deleteProduct = connection.prepareStatement("DELETE FROM inventory WHERE inventory_id = ?");
@@ -541,7 +550,7 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			
 			// Prepare statement to update tables
 			updateProduct = connection.prepareStatement("UPDATE `product` SET `name` = ?, `price` = ?, `category` = ?, `description` = ?, `image` = ? WHERE inventory_id = ?;");
