@@ -5,8 +5,14 @@ package application;
  *
  */
 public class User {
+	/**
+	 * @param name
+	 * @param email
+	 * @param password
+	 * @param type
+	 * @param id
+	 */
 	public User(String name, String email, String password, int type, int id) {
-		super();
 		this.name = name;
 		this.email = email;
 		this.password = password;

@@ -20,36 +20,36 @@
                   <Font size="18.0" />
                </font>
             </Label>
-            <Label layoutX="15.0" layoutY="114.0" text="Category" textFill="WHITE">
+            <Label layoutX="5.0" layoutY="114.0" text="Description" textFill="WHITE">
                <font>
                   <Font size="18.0" />
                </font>
             </Label>
-            <Label layoutX="15.0" layoutY="14.0" text="Name" textFill="WHITE">
+            <Label layoutX="15.0" layoutY="14.0" text="Title" textFill="WHITE">
                <font>
                   <Font size="18.0" />
                </font>
             </Label>
-            <Label layoutX="5.0" layoutY="164.0" text="Description" textFill="WHITE">
+            <Label layoutX="15.0" layoutY="164.0" text="Quantity" textFill="WHITE">
                <font>
                   <Font size="18.0" />
                </font>
             </Label>
-            <TextField fx:id="nameField" layoutX="99.0" layoutY="15.0" />
+            <TextField fx:id="titleField" layoutX="99.0" layoutY="15.0" />
             <TextField fx:id="priceField" layoutX="99.0" layoutY="65.0" />
-            <TextField fx:id="categoryField" layoutX="101.0" layoutY="115.0" />
-            <TextField fx:id="descriptionField" layoutX="99.0" layoutY="165.0" />
+            <TextField fx:id="descriptionField" layoutX="101.0" layoutY="115.0" />
+            <TextField fx:id="quantityField" layoutX="99.0" layoutY="165.0" />
             <Button fx:id="btnAdd" layoutX="25.0" layoutY="306.0" mnemonicParsing="false" onAction="#add" text="Add" />
             <Button fx:id="btnUpdate" layoutX="115.0" layoutY="306.0" mnemonicParsing="false" onAction="#update" text="Update" />
             <Button fx:id="btnDelete" layoutX="205.0" layoutY="306.0" mnemonicParsing="false" onAction="#delete" text="Delete" />
             <TextField fx:id="imageField" layoutX="101.0" layoutY="215.0" />
-            <Label layoutX="15.0" layoutY="215.0" text="Image" textFill="WHITE">
+            <Label layoutX="15.0" layoutY="214.0" text="Image" textFill="WHITE">
                <font>
                   <Font size="18.0" />
                </font>
             </Label>
-            <TextField fx:id="stockField" layoutX="101.0" layoutY="265.0" />
-            <Label layoutX="19.0" layoutY="265.0" text="Stock" textFill="WHITE">
+            <TextField fx:id="categoryField" layoutX="101.0" layoutY="265.0" />
+            <Label layoutX="15.0" layoutY="264.0" text="Category" textFill="WHITE">
                <font>
                   <Font size="18.0" />
                </font>
@@ -58,14 +58,13 @@
       </Pane>
       <TableView fx:id="table" layoutX="280.0" layoutY="65.0" minHeight="298.0" minWidth="452.0" prefHeight="435.0" prefWidth="600.0">
         <columns>
-          <TableColumn fx:id="productIdColumn" prefWidth="75.0" text="Product ID" />
-          <TableColumn fx:id="inventoryIdColumn" prefWidth="75.0" text="Inventory ID" />
-            <TableColumn fx:id="nameColumn" prefWidth="75.0" text="Name" />
+          <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID" />
+            <TableColumn fx:id="titleColumn" prefWidth="75.0" text="Title" />
             <TableColumn fx:id="priceColumn" prefWidth="75.0" text="Price" />
-            <TableColumn fx:id="categoryColumn" prefWidth="75.0" text="Category" />
             <TableColumn fx:id="descriptionColumn" prefWidth="75.0" text="Description" />
+            <TableColumn fx:id="quantityColumn" prefWidth="75.0" text="Quantity" />
             <TableColumn fx:id="imageColumn" prefWidth="75.0" text="Image" />
-            <TableColumn fx:id="stockColumn" prefWidth="75.0" text="Stock" />
+            <TableColumn fx:id="categoryColumn" prefWidth="75.0" text="Category" />
         </columns>
       </TableView>
    </children>

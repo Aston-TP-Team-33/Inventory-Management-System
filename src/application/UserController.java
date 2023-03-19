@@ -11,6 +11,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -52,14 +53,17 @@ public class UserController implements Initializable {
     private TableView<User> table;
 
     @FXML
-    private TextField passwordField;
+    private PasswordField passwordField;
 
     @FXML
     private TableColumn<User, Integer> idColumn;
 
     @FXML
     private TableColumn<User, String> emailColumn;
-
+    
+    @FXML
+    private TableColumn<User, String> passwordColumn;
+    
     /**
      * Takes the users input and adds it to the database
      * @param event
@@ -86,6 +90,10 @@ public class UserController implements Initializable {
     	updateTable();
     }
 
+	/**
+	 * Updates a use stored in the database
+	 * @param event
+	 */
 	@FXML
     void update(ActionEvent event) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -107,8 +115,8 @@ public class UserController implements Initializable {
     	Integer type = typeField.getValue();
     	
     	// Make sure form was filled
-    	if(fullName.equals("") || password.equals("") || email.equals("") || type == null) {
-			alert.setContentText("Please fill the form.");
+    	if(fullName.equals("") || email.equals("") || type == null) {
+			alert.setContentText("Please provide a name, email & type.");
 			alert.show();
     		return;
     	}
@@ -160,6 +168,8 @@ public class UserController implements Initializable {
     	fullNameColumn.setCellValueFactory(new PropertyValueFactory<User, String>("name"));
     	emailColumn.setCellValueFactory(new PropertyValueFactory<User, String>("email"));
     	typeColumn.setCellValueFactory(new PropertyValueFactory<User, Integer>("type"));
+    	passwordColumn.setCellValueFactory(new PropertyValueFactory<User, String>("password"));
+
     	
     	table.setItems(users);
     }

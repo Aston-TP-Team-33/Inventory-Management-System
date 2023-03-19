@@ -1,42 +1,62 @@
 package application;
 
-import java.sql.Date;
-
 public class Order {
-	private int order_id;
-	private int user_id;
-	private Date order_date;
-	private String status;
-	private float total;
+	private int orderId;
+	private int userId;
+	private int houseNumber;
+	private String street;
+	private String postcode; 
+	private String city; 
+	private int productId;
+	private String orderStatus;
+	private int quantity;
 	
-	public float getTotal() {
-		return total;
+	public Order(int orderId, int userId, int houseNumber, String street, String postcode, String city,
+			int productId, float price, String orderStatus, int quantity) {
+		this.orderId = orderId;
+		this.userId = userId;
+		this.houseNumber = houseNumber;
+		this.street = street;
+		this.postcode = postcode;
+		this.city = city;
+		this.productId = productId;
+		this.orderStatus = orderStatus;
+		this.quantity = quantity;
 	}
-	public void setTotal(float total) {
-		this.total = total;
+	
+	public int getOrderId() {
+		return orderId;
 	}
-	public String getStatus() {
-		return status;
+	
+	public int getUserId() {
+		return userId;
 	}
-	public void setStatus(String status) {
-		this.status = status;
+	
+	public int getHouseNumber() {
+		return houseNumber;
 	}
-	public Date getOrder_date() {
-		return order_date;
+	
+	public String getStreet() {
+		return street;
 	}
-	public void setOrder_date(Date order_date) {
-		this.order_date = order_date;
+	
+	public String getPostcode() {
+		return postcode;
 	}
-	public int getUser_id() {
-		return user_id;
+	
+	public String getCity() {
+		return city;
 	}
-	public void setUser_id(int user_id) {
-		this.user_id = user_id;
+	
+	public int getProductId() {
+		return productId;
 	}
-	public int getOrder_id() {
-		return order_id;
+	
+	public String getOrderStatus() {
+		return orderStatus;
 	}
-	public void setOrder_id(int order_id) {
-		this.order_id = order_id;
+	
+	public int getQuantity() {
+		return quantity;
 	}
 }
