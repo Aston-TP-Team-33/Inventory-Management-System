@@ -51,7 +51,7 @@
             <Button fx:id="btnSeeProduct1" layoutY="420.0" mnemonicParsing="false" onAction="#seeUser" prefHeight="25.0" prefWidth="255.0" text="See User" />
          </children>
       </Pane>
-      <TableView fx:id="table" layoutX="256.0" layoutY="59.0" minHeight="298.0" minWidth="452.0" prefHeight="435.0" prefWidth="618.0">
+      <TableView fx:id="table" layoutX="255.0" layoutY="65.0" minHeight="298.0" minWidth="452.0" prefHeight="435.0" prefWidth="618.0">
          <columns>
             <TableColumn fx:id="orderIdColumn" prefWidth="75.0" text="Order ID" />
             <TableColumn fx:id="userIdColumn" prefWidth="75.0" text="User ID" />

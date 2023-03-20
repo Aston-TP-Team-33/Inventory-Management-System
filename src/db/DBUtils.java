@@ -7,6 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import at.favre.lib.crypto.bcrypt.BCrypt.Verifyer;
 import application.Order;
@@ -53,7 +56,48 @@ public class DBUtils {
 		stage.setResizable(false);
 		stage.show();
 	}
+	
+	public static Connection getConnection(){
+		// SSH Info
+		String sshHost = "cs2410-web01pvm.aston.ac.uk"; 
+		String sshUsername = "u-210151525"; 
+		String sshPassword = "LtRKNSRcD+kQQ+j+";
+		int sshPort = 22; 
+		
+		// DB Info
+		String databaseHost = "localhost";
+		int databasePort = 3306;
+		String databaseUsername = "u-210151525"; 
+		String databasePassword = "eIbZxnt2MeJkJiT";
+		String databaseName = "u_210151525_laravel";
+		
+		Connection connection = null;
+		
+		try {
+			// Create SSH connection
+		    JSch jsch = new JSch();
+		    Session session = jsch.getSession(sshUsername, sshHost, sshPort);
+		    session.setPassword(sshPassword);
+		    session.setConfig("StrictHostKeyChecking", "no");
+		    session.connect();
 
+		    int tunnelLocalPort = 0; // replace with a local port number that is not already in use
+		    int tunnelRemotePort = databasePort;
+		    String tunnelRemoteHost = databaseHost;
+		    int assignedPort = session.setPortForwardingL(tunnelLocalPort, tunnelRemoteHost, tunnelRemotePort);
+
+		    String url = "jdbc:mysql://localhost:" + assignedPort + "/" + databaseName;
+		    connection = DriverManager.getConnection(url, databaseUsername, databasePassword);
+		    
+//		    connection.close();
+//		    session.disconnect();
+		} catch (Exception e) {
+		    // handle any errors that occur
+			e.printStackTrace();
+		}
+		
+	    return connection;
+	}
 	
 	/**
 	 * Checks if user exists, if they are an admin and logs them into the program.
@@ -72,7 +116,8 @@ public class DBUtils {
 		try {
 			// Connect to database
 			//TODO connect to host database
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Query user
 			checkLoginCredentials = connection.prepareStatement("SELECT password, type FROM users WHERE email = ?;");
@@ -137,7 +182,8 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Hash users password 
 			String hashedPassword = BCrypt.withDefaults().hashToString(10, password.toCharArray());
@@ -177,8 +223,8 @@ public class DBUtils {
 		try {
 			// Connect to database
 			//TODO connect to host database
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
-			
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
+			connection = getConnection();
 			// Query users
 			getUsers = connection.createStatement();
 			ResultSet rs = getUsers.executeQuery("SELECT * FROM users");
@@ -219,7 +265,8 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Prepare statement to add user
 			deleteUser = connection.prepareStatement("DELETE FROM users WHERE id = ?");
@@ -254,7 +301,8 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Prepare statement to add user
 			updateUser = connection.prepareStatement("UPDATE users SET `name` = ?, `email` = ?, `password` = ?, `type` = ? WHERE id = ?;");
@@ -297,7 +345,8 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Prepare statement to add user
 			updateUser = connection.prepareStatement("UPDATE users SET `name` = ?, `email` = ?, `type` = ? WHERE id = ?;");
@@ -330,7 +379,8 @@ public class DBUtils {
 		try {
 			// Connect to database
 			//TODO connect to host database
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
+			connection = getConnection();
 			
 			// Query users
 			getOrders = connection.createStatement();
@@ -374,7 +424,8 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Prepare statement to add user
 			deleteOrder = connection.prepareStatement("DELETE FROM user_orders WHERE id = ?");
@@ -403,7 +454,8 @@ public class DBUtils {
 		ObservableList<User> users = FXCollections.observableArrayList();
 		
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");		
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");		
+			connection = getConnection();
 			
 			// Prepare statement to get products associated with current order
 			seeUser = connection.prepareStatement("SELECT * FROM users WHERE id = ?;");
@@ -444,7 +496,8 @@ public class DBUtils {
 		ObservableList<Product> products = FXCollections.observableArrayList();
 		
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");		
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");		
+			connection = getConnection();
 			
 			// Prepare statement to get products associated with current order
 			seeProduct = connection.prepareStatement("SELECT * FROM products WHERE id = ?;");
@@ -484,7 +537,8 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Prepare statement to add order
 			updateOrder = connection.prepareStatement("UPDATE `user_orders` SET `order_status` = ?, `house_number` = ?, `street` = ?, `postcode` = ?, `city` = ? WHERE id = ?;");
@@ -524,7 +578,8 @@ public class DBUtils {
 		try {
 			// Connect to database
 			//TODO connect to host database
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
+			connection = getConnection();
 			
 			// Query products
 			getProducts = connection.createStatement();
@@ -573,7 +628,8 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Prepare statement to add product
 			addProduct = connection.prepareStatement("INSERT INTO `products` (`id`, `title`, `price`, `category`, `description`, `image`, `quantity` ) VALUES (NULL, ?, ?, ?, ?, ?, ?);");
@@ -606,7 +662,8 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Delete from inventory table - this will automatically delete it from the product table also
 			deleteProduct = connection.prepareStatement("DELETE FROM products WHERE id = ?");
@@ -633,7 +690,8 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Prepare statement to update tables
 			updateProduct = connection.prepareStatement("UPDATE `products` SET `title` = ?, `price` = ?, `category` = ?, `description` = ?, `image` = ?, `quantity` = ? WHERE id = ?;");
