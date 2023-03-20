@@ -19,10 +19,13 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
+import javafx.util.converter.IntegerStringConverter;
 
 /**
  * @author Remy Thompson
@@ -43,7 +46,7 @@ public class OrderController implements Initializable{
     private TableColumn<Order, Integer> userIdColumn;
 
     @FXML
-    private TableColumn<Order, Date> orderDateColumn;
+    private TableColumn<Order, Date> productIdColumn;
 
     @FXML
     private TableColumn<Order, String> statusColumn;
@@ -52,21 +55,42 @@ public class OrderController implements Initializable{
     private Button btnUpdate;
 
     @FXML
-    private TableColumn<Order, Float> totalColumn;
-
-    @FXML
-    private Button btnSeeProducts;
+    private Button btnSeeProduct;
 
     @FXML
     private TableView<Order> table;
-
-
+    
+    @FXML
+    private TableColumn<Order, String> cityColumn;
+    
+    @FXML
+    private TableColumn<Order, String> streetColumn;
+    
+    @FXML
+    private TableColumn<Order, Integer> houseNumberColumn;
+    
+    @FXML
+    private TableColumn<Order, String> postcodeColumn;
+    
+    @FXML
+    private TextField cityField;
+    
+    @FXML
+    private TextField houseNumberField;
+    
+    @FXML
+    private TextField postcodeField;
+    
+    @FXML
+    private TextField streetField;
+    
+    
     /**
      * Loads list of products for selected order
      * @param event
      */
     @FXML
-    void seeProducts(ActionEvent event) {
+    void seeUser(ActionEvent event) {
     	// Get selected order
     	Order order = table.getSelectionModel().getSelectedItem();
     	
@@ -79,8 +103,8 @@ public class OrderController implements Initializable{
     		return;
     	}
     	
-    	// Get products for selected order
-    	ObservableList<Product> products = DBUtils.seeProducts(order.getOrder_id());    		
+    	// Get user for selected order
+    	ObservableList<User> users = DBUtils.seeUser(order.getUserId());    		
     	
     	// Load page for individual order
     	Button btn = (Button) event.getSource();
@@ -89,7 +113,7 @@ public class OrderController implements Initializable{
     	
     	Parent root = null;
     	
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("individualOrder.fxml"));
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("individualUser.fxml"));
 
     	try {
 			root = loader.load();
@@ -104,10 +128,55 @@ public class OrderController implements Initializable{
     	bp.setCenter(root);
     	
     	// Fill the table
-    	IndividualOrderController ioc = loader.getController();
-    	ioc.loadTable(products);
+    	IndividualUserController iuc = loader.getController();
+    	iuc.loadTable(users);
     	// Rename label to match order
-    	ioc.setOrderName("Order " + order.getOrder_id());
+    	iuc.setOrderName("User " + order.getUserId());
+    }
+    
+    @FXML
+    void seeProduct(ActionEvent event) {
+    	// Get selected order
+    	Order order = table.getSelectionModel().getSelectedItem();
+    	
+    	// Display error if no order is selected 
+    	if(order == null) {
+    		Alert alert = new Alert(Alert.AlertType.ERROR);
+    		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+    		alert.setContentText("Please select an item from the table");
+    		alert.show();
+    		return;
+    	}
+    	
+    	// Get user for selected order
+    	ObservableList<Product> products = DBUtils.seeProduct(order.getUserId());    		
+    	
+    	// Load page for individual order
+    	Button btn = (Button) event.getSource();
+    	Scene scene = btn.getScene();
+    	BorderPane bp = (BorderPane) scene.lookup("#bp");
+    	
+    	Parent root = null;
+    	
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("individualProduct.fxml"));
+
+    	try {
+			root = loader.load();
+		} catch (IOException e) {
+    		Alert alert = new Alert(Alert.AlertType.ERROR);
+    		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+    		alert.setContentText(e.getMessage());
+    		alert.show();
+    		return;
+		}
+    	
+    	bp.setCenter(root);
+    	
+    	// Fill the table
+    	IndividualProductController ipc = loader.getController();
+    	ipc.loadTable(products);
+    	// Rename label to match order
+    	ipc.setOrderName("Product " + order.getProductId());
     }
 
     @FXML
@@ -123,8 +192,22 @@ public class OrderController implements Initializable{
     	}
     	
     	String status = statusField.getValue();
+    	String city = cityField.getText();
+    	String postcode = postcodeField.getText();
+    	String street = streetField.getText();
+    	String houseNumberText = houseNumberField.getText();
+    	Integer id = order.getOrderId();
     	
-    	DBUtils.updateOrder(status, order.getOrder_id());
+    	if(status.equals("") || city.equals("") || postcode.equals("") || street.equals("") || houseNumberText.equals("") || id == null) {
+    		Alert alert = new Alert(Alert.AlertType.ERROR);
+    		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+			alert.setContentText("Please select an item from the table");
+			alert.show();
+    		return;
+    	}
+    	
+    	Integer houseNumber = Integer.parseInt(houseNumberField.getText());
+    	DBUtils.updateOrder(status, city, postcode, street, houseNumber, id);
     	
     	resetFields();
     	updateTable();
@@ -146,10 +229,10 @@ public class OrderController implements Initializable{
     	Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		alert.setHeaderText("Are you sure?");
-		alert.setContentText("Are you sure you would like to delete Order " + order.getOrder_id() + " from the table?");
+		alert.setContentText("Are you sure you would like to delete Order " + order.getOrderId() + " from the table?");
 		
 		if(alert.showAndWait().get() == ButtonType.OK) {
-			DBUtils.removeOrder(order.getOrder_id());
+			DBUtils.removeOrder(order.getOrderId());
 		}
 		
 		resetFields();
@@ -159,23 +242,32 @@ public class OrderController implements Initializable{
     private void updateTable() {
     	ObservableList<Order> orders = DBUtils.getOrders();
   
-    	userIdColumn.setCellValueFactory(new PropertyValueFactory<Order, Integer>("user_id"));
-    	orderDateColumn.setCellValueFactory(new PropertyValueFactory<Order, Date>("order_date"));
-    	orderIdColumn.setCellValueFactory(new PropertyValueFactory<Order, Integer>("order_id"));
-    	statusColumn.setCellValueFactory(new PropertyValueFactory<Order, String>("status"));
-    	totalColumn.setCellValueFactory(new PropertyValueFactory<Order, Float>("total"));
-    	
+    	userIdColumn.setCellValueFactory(new PropertyValueFactory<Order, Integer>("userId"));
+    	productIdColumn.setCellValueFactory(new PropertyValueFactory<Order, Date>("productId"));
+    	orderIdColumn.setCellValueFactory(new PropertyValueFactory<Order, Integer>("orderId"));
+    	statusColumn.setCellValueFactory(new PropertyValueFactory<Order, String>("orderStatus"));
+    	cityColumn.setCellValueFactory(new PropertyValueFactory<Order, String>("city"));
+    	postcodeColumn.setCellValueFactory(new PropertyValueFactory<Order, String>("postcode"));
+    	houseNumberColumn.setCellValueFactory(new PropertyValueFactory<Order, Integer>("houseNumber"));
+    	streetColumn.setCellValueFactory(new PropertyValueFactory<Order, String>("street"));
     	table.setItems(orders);
     }
     
     private void resetFields() {
     	statusField.setValue(null);	
-	}
+    	houseNumberField.setText("");
+    	cityField.setText("");
+    	postcodeField.setText("");
+    	streetField.setText("");
+    }
     
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
+		// House number can only be set to integer 
+		houseNumberField.setTextFormatter(new TextFormatter<>(new IntegerStringConverter()));
+		
 		// Setup role selection
-		String[] options = {"pending", "shipped", "completed", "cancelled"};
+		String[] options = {"Placed", "Dispatched", "Delivered", "Cancelled"};
 		statusField.getItems().addAll(options);
 		
 		// Setup table
@@ -183,7 +275,11 @@ public class OrderController implements Initializable{
 		table.setOnMouseClicked((MouseEvent event) ->{
 			Order order = table.getSelectionModel().getSelectedItem();
 			if(order != null) {
-				statusField.getSelectionModel().select(order.getStatus());
+				statusField.getSelectionModel().select(order.getOrderStatus());
+				cityField.setText(order.getCity());
+				streetField.setText(order.getStreet());
+				postcodeField.setText(order.getPostcode());
+				houseNumberField.setText(Integer.toString(order.getHouseNumber()));
 			}
 		});
 		

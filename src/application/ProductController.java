@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -19,18 +20,23 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.util.converter.FloatStringConverter;
 import javafx.util.converter.IntegerStringConverter;
-import javafx.util.converter.NumberStringConverter;
 
 public class ProductController implements Initializable {
+
+    @FXML
+    private TableColumn<Product, String> imageColumn;
+
+    @FXML
+    private TextField imageField;
 
     @FXML
     private Button btnUpdate;
 
     @FXML
-    private TextField nameField;
+    private TextField titleField;
 
     @FXML
-    private TableColumn<Product, Integer> inventoryIdColumn;
+    private TextField quantityField;
 
     @FXML
     private TextField descriptionField;
@@ -39,16 +45,16 @@ public class ProductController implements Initializable {
     private TableColumn<Product, String> categoryColumn;
 
     @FXML
-    private TableColumn<Product, Integer> productIdColumn;
+    private TextField categoryField;
 
     @FXML
-    private TextField categoryField;
+    private TableColumn<Product, Integer> quantityColumn;
 
     @FXML
     private Button btnDelete;
 
     @FXML
-    private TableColumn<Product, String> nameColumn;
+    private TableColumn<Product, String> titleColumn;
 
     @FXML
     private TextField priceField;
@@ -63,30 +69,21 @@ public class ProductController implements Initializable {
     private TableColumn<Product, Float> priceColumn;
 
     @FXML
+    private TableColumn<Product, Integer> idColumn;
+
+    @FXML
     private TableColumn<Product, String> descriptionColumn;
-    
-    @FXML
-    private TableColumn<Product, String> imageColumn;
-    
-    @FXML
-    private TextField imageField;
-    
-    @FXML
-    private TextField stockField;
-    
-    @FXML
-    private TableColumn<Product, Integer> stockColumn;
 
     @FXML
     void add(ActionEvent event) {
-    	String name = nameField.getText();
+    	String title = titleField.getText();
     	String category = categoryField.getText();
     	String description = descriptionField.getText();
     	String image = imageField.getText();
-    	Float price = Float.parseFloat(priceField.getText());
-    	Integer stock = Integer.parseInt(stockField.getText());
+    	String priceText = priceField.getText();
+    	String quantityText = quantityField.getText();
     	
-    	if(name.equals("") || category.equals("") || description.equals("") || image.equals("") || price == null || stock == null) {
+    	if(title.equals("") || category.equals("") || description.equals("") || image.equals("") || priceText.equals("") || quantityText.equals("")) {
     		Alert alert = new Alert(Alert.AlertType.ERROR);
     		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 			alert.setContentText("Please fill the form.");
@@ -94,7 +91,10 @@ public class ProductController implements Initializable {
     		return;
     	}
     	
-    	DBUtils.addProduct(name, price, category, description, image, stock);
+    	Float price = Float.parseFloat(priceText);
+    	int quantity = Integer.parseInt(quantityText);
+    	
+    	DBUtils.addProduct(title, price, category, description, image, quantity);
     	
     	updateTable();
     	resetFields();
@@ -102,14 +102,62 @@ public class ProductController implements Initializable {
 
     @FXML
     void update(ActionEvent event) {
+    	Product product = table.getSelectionModel().getSelectedItem();
 
+    	
+    	if(product == null) {
+    		Alert alert = new Alert(Alert.AlertType.ERROR);
+    		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+			alert.setContentText("Please select an item from the table");
+			alert.show();
+    		return;
+    	}
+    	
+    	int id = product.getId();
+    	String title = titleField.getText();
+    	String category = categoryField.getText();
+    	String description = descriptionField.getText();
+    	String image = imageField.getText();
+    	String priceText = priceField.getText();
+    	String quantityText = quantityField.getText();
+    	
+    	if(title.equals("") || category.equals("") || description.equals("") || image.equals("") ||  priceText.equals("") || quantityText.equals("")) {
+    		Alert alert = new Alert(Alert.AlertType.ERROR);
+    		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+			alert.setContentText("Please select an item from the table");
+			alert.show();
+    		return;
+    	}
+    	
+    	Float price = Float.parseFloat(priceText);
+    	int quantity = Integer.parseInt(quantityText);
+    	
+    	DBUtils.updateProduct(title, price, category, description, image, quantity, id);
+    	
+    	updateTable();
+    	resetFields();
     }
 
     @FXML
     void delete(ActionEvent event) {
 		Product product = table.getSelectionModel().getSelectedItem();
-
-    	DBUtils.deleteProduct(product.getInventoryId());
+		
+    	if(product == null) {
+    		Alert alert = new Alert(Alert.AlertType.ERROR);
+    		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+    		alert.setContentText("Please select an item from the table");
+    		alert.show();
+    		return;
+    	}
+    	
+    	Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		alert.setHeaderText("Are you sure?");
+		alert.setContentText("Are you sure you would like to delete " + product.getTitle() + " from the table?");
+		
+		if(alert.showAndWait().get() == ButtonType.OK) {
+			DBUtils.deleteProduct(product.getId());
+		}
     	
     	resetFields();
     	updateTable();
@@ -118,14 +166,13 @@ public class ProductController implements Initializable {
     void updateTable() {
     	ObservableList<Product> products = DBUtils.getProducts();
     	
-    	productIdColumn.setCellValueFactory(new PropertyValueFactory<Product, Integer>("productId"));
-    	inventoryIdColumn.setCellValueFactory(new PropertyValueFactory<Product, Integer>("inventoryId"));
     	categoryColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("category"));
     	descriptionColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("description"));
-    	nameColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("name"));
-    	priceColumn.setCellValueFactory(new PropertyValueFactory<Product, Float>("price"));
+    	idColumn.setCellValueFactory(new PropertyValueFactory<Product, Integer>("id"));
     	imageColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("image"));
-    	stockColumn.setCellValueFactory(new PropertyValueFactory<Product, Integer>("stock"));
+    	priceColumn.setCellValueFactory(new PropertyValueFactory<Product, Float>("price"));
+    	quantityColumn.setCellValueFactory(new PropertyValueFactory<Product, Integer>("quantity"));
+    	titleColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("title"));
     	
     	table.setItems(products);
     }
@@ -133,27 +180,28 @@ public class ProductController implements Initializable {
     private void resetFields() {
     	categoryField.setText("");
     	descriptionField.setText("");
-    	nameField.setText("");
+    	titleField.setText("");
     	priceField.setText("");	
-    	stockField.setText(null);
+    	quantityField.setText(null);
+    	imageField.setText("");
 	}
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		// Set fields to only take numerical values
 		priceField.setTextFormatter(new TextFormatter<>(new FloatStringConverter()));
-		stockField.setTextFormatter(new TextFormatter<>(new IntegerStringConverter()));
+		quantityField.setTextFormatter(new TextFormatter<>(new IntegerStringConverter()));
 		
 		// Update text fields on click
 		table.setOnMouseClicked((MouseEvent event) ->{
 			Product product = table.getSelectionModel().getSelectedItem();
 			if(product != null) {
-				nameField.setText(product.getName());
+				titleField.setText(product.getTitle());
 				categoryField.setText(product.getCategory());
 				descriptionField.setText(product.getDescription());
 				priceField.setText(Float.toString(product.getPrice()));
 				imageField.setText(product.getImage());
-				stockField.setText(Integer.toString(product.getStock()));
+				quantityField.setText(Integer.toString(product.getQuantity()));
 			}
 		});
 		

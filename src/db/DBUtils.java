@@ -7,6 +7,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+
+import at.favre.lib.crypto.bcrypt.BCrypt;
+import at.favre.lib.crypto.bcrypt.BCrypt.Verifyer;
 import application.Order;
 import application.Product;
 import application.User;
@@ -51,15 +56,56 @@ public class DBUtils {
 		stage.setResizable(false);
 		stage.show();
 	}
+	
+	public static Connection getConnection(){
+		// SSH Info
+		String sshHost = "cs2410-web01pvm.aston.ac.uk"; 
+		String sshUsername = "u-210151525"; 
+		String sshPassword = "LtRKNSRcD+kQQ+j+";
+		int sshPort = 22; 
+		
+		// DB Info
+		String databaseHost = "localhost";
+		int databasePort = 3306;
+		String databaseUsername = "u-210151525"; 
+		String databasePassword = "eIbZxnt2MeJkJiT";
+		String databaseName = "u_210151525_laravel";
+		
+		Connection connection = null;
+		
+		try {
+			// Create SSH connection
+		    JSch jsch = new JSch();
+		    Session session = jsch.getSession(sshUsername, sshHost, sshPort);
+		    session.setPassword(sshPassword);
+		    session.setConfig("StrictHostKeyChecking", "no");
+		    session.connect();
 
+		    int tunnelLocalPort = 0; // replace with a local port number that is not already in use
+		    int tunnelRemotePort = databasePort;
+		    String tunnelRemoteHost = databaseHost;
+		    int assignedPort = session.setPortForwardingL(tunnelLocalPort, tunnelRemoteHost, tunnelRemotePort);
+
+		    String url = "jdbc:mysql://localhost:" + assignedPort + "/" + databaseName;
+		    connection = DriverManager.getConnection(url, databaseUsername, databasePassword);
+		    
+//		    connection.close();
+//		    session.disconnect();
+		} catch (Exception e) {
+		    // handle any errors that occur
+			e.printStackTrace();
+		}
+		
+	    return connection;
+	}
 	
 	/**
 	 * Checks if user exists, if they are an admin and logs them into the program.
 	 * @param event - Event that caused the method to run
-	 * @param username - username entered into the text field
+	 * @param name - username entered into the text field
 	 * @param password - password entered into the password field
 	 */
-	public static void loginUser(ActionEvent event, String username, String password) {
+	public static void loginUser(ActionEvent event, String email, String password) {
 		Connection connection = null;
 		PreparedStatement checkLoginCredentials = null;
 		ResultSet resultSet = null;
@@ -70,13 +116,15 @@ public class DBUtils {
 		try {
 			// Connect to database
 			//TODO connect to host database
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Query user
-			checkLoginCredentials = connection.prepareStatement("SELECT password, role FROM user WHERE username = ?;");
-			checkLoginCredentials.setString(1, username);
+			checkLoginCredentials = connection.prepareStatement("SELECT password, type FROM users WHERE email = ?;");
+			checkLoginCredentials.setString(1, email);
 			
 			resultSet = checkLoginCredentials.executeQuery();
+			
 			
 			// If user does not exist then display an error
 			if(!resultSet.isBeforeFirst()) {
@@ -87,22 +135,24 @@ public class DBUtils {
 			
 			resultSet.next();
 			String retrievedPassword = resultSet.getString("password");
-			int retrievedRole = resultSet.getInt("role");
-						
-			// Check password
-			if(!password.equals(retrievedPassword)) {
+			int retrievedType = resultSet.getInt("type");
+									
+			Verifyer v = BCrypt.verifyer();
+			
+			// Check password by comparing the entered password to the password from the database 
+			if(!v.verify(password.toCharArray(), retrievedPassword.toCharArray()).verified) {
 				alert.setContentText("Incorrect login credentials please try again.");
 				alert.show();
 				return;
 			}
 			
 			// Check role
-			if(retrievedRole != 1) {
+			if(retrievedType != 1) {
 				alert.setContentText("You are not an admin. Please contact an administrator to upgrade your role.");
 				alert.show();
 				return;
 			}
-			
+	
 			DBUtils.changeScene(event, "Test", "../application/SideNavigation.fxml");
 		} catch (SQLException e) {
 			alert.setContentText(e.getMessage());
@@ -122,7 +172,7 @@ public class DBUtils {
 	 * @param password - password entered into the password field
 	 * @param role - role selected 
 	 */
-	public static void addUser(String name, String email, String username, String password, int role) {
+	public static void addUser(String name, String email, String password, int type) {
 		Connection connection = null;
 		PreparedStatement addUser = null;
 		
@@ -132,15 +182,18 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
+			
+			// Hash users password 
+			String hashedPassword = BCrypt.withDefaults().hashToString(10, password.toCharArray());
 			
 			// Prepare statement to add user
-			addUser = connection.prepareStatement("INSERT INTO `user` (`user_id`, `full_name`, `email`, `username`, `password`, `role`) VALUES (NULL, ?, ?, ?, ?, ?);");
+			addUser = connection.prepareStatement("INSERT INTO `users` (`name`, `email`, `password`, `type`) VALUES (?, ?, ?, ?);");
 			addUser.setString(1, name);
 			addUser.setString(2, email);
-			addUser.setString(3, username);
-			addUser.setString(4, password);
-			addUser.setString(5, Integer.toString(role));
+			addUser.setString(3, hashedPassword);
+			addUser.setString(4, Integer.toString(type));
 			
 			// Add user to database
 			addUser.executeUpdate();	
@@ -170,21 +223,21 @@ public class DBUtils {
 		try {
 			// Connect to database
 			//TODO connect to host database
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");	
-			
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
+			connection = getConnection();
 			// Query users
 			getUsers = connection.createStatement();
-			ResultSet rs = getUsers.executeQuery("SELECT * FROM user");
+			ResultSet rs = getUsers.executeQuery("SELECT * FROM users");
 			
 			// Add users to list
 			while(rs.next()) {
-				User user = new User();
-				user.setId(rs.getInt("user_id"));
-				user.setFullName(rs.getString("full_name"));
-				user.setEmail(rs.getString("email"));
-				user.setUsername(rs.getString("username"));
-				user.setPassword(rs.getString("password"));
-				user.setRole(rs.getInt("role"));
+				int id = rs.getInt("id");
+				String name = rs.getString("name");
+				String email = rs.getString("email");
+				String password = rs.getString("password");
+				int type = rs.getInt("type");
+				
+				User user = new User(name, email, password, type, id);
 				users.add(user);
 			}			
 		} catch(SQLException e) {
@@ -199,6 +252,10 @@ public class DBUtils {
 	}
 
 
+	/**
+	 * Removes a user from the database based on their id 
+	 * @param id - id of the user to be deleted 
+	 */
 	public static void removeUser(int id) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -208,10 +265,11 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Prepare statement to add user
-			deleteUser = connection.prepareStatement("DELETE FROM user WHERE `user`.`user_id` = ?");
+			deleteUser = connection.prepareStatement("DELETE FROM users WHERE id = ?");
 			deleteUser.setInt(1, id);
 			
 			// Delete user from
@@ -226,7 +284,15 @@ public class DBUtils {
 	}
 
 
-	public static void updateUser(Integer id, String fullName, String email, String username, String password, Integer role) {
+	/**
+	 * Update the user stored on the database based on their id (new password)
+	 * @param id - id of the user to be update
+	 * @param name - new name of the user
+	 * @param email - new email of the user
+	 * @param password - new password of the user
+	 * @param type - new type of the user
+	 */
+	public static void updateUser(Integer id, String name, String email, String password, Integer type) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		
@@ -235,17 +301,60 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Prepare statement to add user
-			updateUser = connection.prepareStatement("UPDATE `user` SET `full_name` = ?, `email` = ?, `username` = ?, `password` = ?, `role` = ? WHERE `user`.`user_id` = ?;");
+			updateUser = connection.prepareStatement("UPDATE users SET `name` = ?, `email` = ?, `password` = ?, `type` = ? WHERE id = ?;");
 			
-			updateUser.setString(1, fullName);
+			// Hash Password 
+			String hashedPassword = BCrypt.withDefaults().hashToString(10, password.toCharArray());
+			
+			updateUser.setString(1, name);
 			updateUser.setString(2, email);
-			updateUser.setString(3, username);
-			updateUser.setString(4, password);
-			updateUser.setInt(5, role);
-			updateUser.setInt(6, id);
+			updateUser.setString(3, hashedPassword);
+			updateUser.setInt(4, type);
+			updateUser.setInt(5, id);
+
+			// Update user 
+			updateUser.executeUpdate();	
+		} catch (SQLException e) {
+			alert.setContentText(e.getMessage());
+			alert.show();
+		}catch(Exception e) {
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}	
+	}
+	
+
+	/**
+	 * Update the user stored on the database based on their id (no new password)
+	 * @param id - id of the user to be update
+	 * @param name - new name of the user
+	 * @param email - new email of the user
+	 * @param password - new password of the user
+	 * @param type - new type of the user
+	 */
+	public static void updateUser(Integer id, String name, String email, Integer type) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		
+		Connection connection = null;
+		PreparedStatement updateUser = null;
+		// Connect to database
+		//TODO connect to host database
+		try {
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
+			
+			// Prepare statement to add user
+			updateUser = connection.prepareStatement("UPDATE users SET `name` = ?, `email` = ?, `type` = ? WHERE id = ?;");
+			
+			updateUser.setString(1, name);
+			updateUser.setString(2, email);
+			updateUser.setInt(3, type);
+			updateUser.setInt(4, id);
 
 			// Update user 
 			updateUser.executeUpdate();	
@@ -270,21 +379,27 @@ public class DBUtils {
 		try {
 			// Connect to database
 			//TODO connect to host database
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");	
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
+			connection = getConnection();
 			
 			// Query users
 			getOrders = connection.createStatement();
-			ResultSet rs = getOrders.executeQuery("SELECT * FROM orders");
+			ResultSet rs = getOrders.executeQuery("SELECT * FROM user_orders");
 			
 			// Add users to list
 			while(rs.next()) {
-				Order order = new Order();
-				order.setOrder_date(rs.getDate("order_date"));
-				order.setStatus(rs.getString("status"));
-				order.setTotal(rs.getFloat("total"));
-				order.setUser_id(rs.getInt("user_id"));
-				order.setOrder_id(rs.getInt("order_id"));
+				int orderId = rs.getInt("id");
+				int userId = rs.getInt("user_id");
+				int houseNumber = rs.getInt("house_number");
+				String street = rs.getString("street");
+				String postcode = rs.getString("postcode");
+				String city = rs.getString("city");
+				int productId = rs.getInt("product_id");
+				String orderStatus = rs.getString("order_status");
+				float price = rs.getFloat("price");
+				int quantity = rs.getInt("quantity");
 				
+				Order order = new Order(orderId, userId, houseNumber, street, postcode, city, productId, price, orderStatus, quantity);
 				orders.add(order);
 			}					
 		} catch(SQLException e) {
@@ -309,10 +424,11 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Prepare statement to add user
-			deleteOrder = connection.prepareStatement("DELETE FROM orders WHERE order_id = ?");
+			deleteOrder = connection.prepareStatement("DELETE FROM user_orders WHERE id = ?");
 			deleteOrder.setInt(1, id);
 			
 			// Delete order from database
@@ -326,30 +442,72 @@ public class DBUtils {
 		}
 	}
 	
-	public static ObservableList<Product> seeProducts(int id) {
+	public static ObservableList<User> seeUser(int id) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		
 		// Connect to database
 		//TODO connect to host database
 		Connection connection = null;
-		PreparedStatement getProducts = null;
+		PreparedStatement seeUser = null;
+		
+		ObservableList<User> users = FXCollections.observableArrayList();
+		
+		try {
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");		
+			connection = getConnection();
+			
+			// Prepare statement to get products associated with current order
+			seeUser = connection.prepareStatement("SELECT * FROM users WHERE id = ?;");
+			seeUser.setInt(1, id);
+			ResultSet rs = seeUser.executeQuery();
+			
+			while(rs.next()) {
+				User user = new User(
+						rs.getString("name"),
+						rs.getString("email"),
+						rs.getString("password"),
+						rs.getInt("type"),
+						rs.getInt("id")
+				);
+				
+				users.add(user);
+			}
+		} catch (SQLException e) {
+			alert.setContentText(e.getMessage());
+			alert.show();
+		}catch(Exception e) {
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}
+		
+		return users;
+	}
+	
+	public static ObservableList<Product> seeProduct(int id) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		
+		// Connect to database
+		//TODO connect to host database
+		Connection connection = null;
+		PreparedStatement seeProduct = null;
 		
 		ObservableList<Product> products = FXCollections.observableArrayList();
 		
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");		
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");		
+			connection = getConnection();
 			
 			// Prepare statement to get products associated with current order
-			getProducts = connection.prepareStatement("SELECT * FROM product INNER JOIN order_item INNER JOIN inventory WHERE product.product_id = order_item.product_id AND product.inventory_id = inventory.inventory_id AND order_item.order_id = ?;");
-			getProducts.setInt(1, id);
-			ResultSet rs = getProducts.executeQuery();
+			seeProduct = connection.prepareStatement("SELECT * FROM products WHERE id = ?;");
+			seeProduct.setInt(1, id);
+			ResultSet rs = seeProduct.executeQuery();
 			
 			while(rs.next()) {
 				Product product = new Product(
-						rs.getInt("product_id"),
-						rs.getInt("inventory_id"),
-						rs.getString("name"),
+						rs.getInt("id"),
+						rs.getString("title"),
 						rs.getFloat("price"),
 						rs.getString("category"),
 						rs.getString("description"),
@@ -370,8 +528,7 @@ public class DBUtils {
 		return products;
 	}
 
-
-	public static void updateOrder(String status, int id) {
+	public static void updateOrder(String status, String city, String postcode, String street, int houseNumber, int id) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		
@@ -380,13 +537,18 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Prepare statement to add order
-			updateOrder = connection.prepareStatement("UPDATE `orders` SET `status` = ? WHERE order_id = ?;");
-			
+			updateOrder = connection.prepareStatement("UPDATE `user_orders` SET `order_status` = ?, `house_number` = ?, `street` = ?, `postcode` = ?, `city` = ? WHERE id = ?;");
+
 			updateOrder.setString(1, status);
-			updateOrder.setInt(2, id);
+			updateOrder.setInt(2, houseNumber);
+			updateOrder.setString(3, street);
+			updateOrder.setString(4, postcode);
+			updateOrder.setString(5, city);
+			updateOrder.setInt(6, id);
 
 			// Update order 
 			updateOrder.executeUpdate();	
@@ -416,18 +578,18 @@ public class DBUtils {
 		try {
 			// Connect to database
 			//TODO connect to host database
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");	
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
+			connection = getConnection();
 			
 			// Query products
 			getProducts = connection.createStatement();
-			ResultSet rs = getProducts.executeQuery("SELECT * FROM product INNER JOIN inventory WHERE product.inventory_id = inventory.inventory_id;");
+			ResultSet rs = getProducts.executeQuery("SELECT * FROM products;");
 			
 			// Add products to list
 			while(rs.next()) {
 				Product product = new Product(
-						rs.getInt("product_id"),
-						rs.getInt("inventory_id"),
-						rs.getString("name"),
+						rs.getInt("id"),
+						rs.getString("title"),
 						rs.getFloat("price"),
 						rs.getString("category"),
 						rs.getString("description"),
@@ -456,10 +618,9 @@ public class DBUtils {
 	 * @param description - description entered into the description field
 	 * @param role - role selected 
 	 */
-	public static void addProduct(String name, Float price, String category, String description, String image, int stock) {
+	public static void addProduct(String title, Float price, String category, String description, String image, int quantity) {
 		Connection connection = null;
 		PreparedStatement addProduct = null;
-		PreparedStatement addInventory = null;
 		
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -467,30 +628,18 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
-			// Insert into inventory
-			addInventory = connection.prepareStatement("INSERT INTO `inventory` (`inventory_id`, `quantity`) VALUES (NULL, ?)", Statement.RETURN_GENERATED_KEYS);
-			addInventory.setInt(1, stock);
-			addInventory.executeUpdate();
-			Integer inventoryId = null;
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
-	        try (ResultSet generatedKeys = addInventory.getGeneratedKeys()) {
-	            if (generatedKeys.next()) {
-	                inventoryId = generatedKeys.getInt(1);
-	            }
-	           }
-
+			// Prepare statement to add product
+			addProduct = connection.prepareStatement("INSERT INTO `products` (`id`, `title`, `price`, `category`, `description`, `image`, `quantity` ) VALUES (NULL, ?, ?, ?, ?, ?, ?);");
 			
-			// Prepare statement to add user
-			addProduct = connection.prepareStatement("INSERT INTO `product` (`product_id`, `inventory_id`, `name`, `price`, `category`, `description`, `image`) VALUES (NULL, ?, ?, ?, ?, ?, ?);");
-			
-			addProduct.setInt(1, inventoryId);
-			addProduct.setString(2, name);
-			addProduct.setFloat(3, price);
-			addProduct.setString(4, category);
-			addProduct.setString(5, description);
-			addProduct.setString(6, image);
-			
+			addProduct.setString(1, title);
+			addProduct.setFloat(2, price);
+			addProduct.setString(3, category);
+			addProduct.setString(4, description);
+			addProduct.setString(5, image);
+			addProduct.setInt(6, quantity);
 			// Add user to database
 			addProduct.executeUpdate();	
 		} catch (SQLException e) {
@@ -513,10 +662,11 @@ public class DBUtils {
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Delete from inventory table - this will automatically delete it from the product table also
-			deleteProduct = connection.prepareStatement("DELETE FROM inventory WHERE inventory_id = ?");
+			deleteProduct = connection.prepareStatement("DELETE FROM products WHERE id = ?");
 			deleteProduct.setInt(1, id);
 						
 			// Delete order from database
@@ -530,35 +680,31 @@ public class DBUtils {
 		}
 	}
 	
-	public static void updateProduct(String name, float price, String category, String description, String image, int stock, int inventoryId) {
+	public static void updateProduct(String title, Float price, String category, String description, String image, int quantity, int id) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		
 		Connection connection = null;
 		PreparedStatement updateProduct = null;
-		PreparedStatement updateInventory = null; 
 		
 		// Connect to database
 		//TODO connect to host database
 		try {
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/team33", "root", "");
+			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
+			connection = getConnection();
 			
 			// Prepare statement to update tables
-			updateProduct = connection.prepareStatement("UPDATE `product` SET `name` = ?, `price` = ?, `category` = ?, `description` = ?, `image` = ? WHERE inventory_id = ?;");
-			updateInventory = connection.prepareStatement("UPDATE `inventory` SET quantity = ? WHERE inventory_id = ?");
+			updateProduct = connection.prepareStatement("UPDATE `products` SET `title` = ?, `price` = ?, `category` = ?, `description` = ?, `image` = ?, `quantity` = ? WHERE id = ?;");
 			
-			updateProduct.setString(1, name);
+			updateProduct.setString(1, title);
 			updateProduct.setFloat(2, price);
 			updateProduct.setString(3, category);
 			updateProduct.setString(4, description);
 			updateProduct.setString(5, image);
-			updateProduct.setInt(6, inventoryId);
-			
-			updateInventory.setInt(1, stock);
-			updateInventory.setInt(2, inventoryId);
-			
+			updateProduct.setInt(6, quantity);
+			updateProduct.setInt(7, id);
+						
 			updateProduct.executeUpdate();	
-			updateInventory.executeUpdate();
 		} catch (SQLException e) {
 			alert.setContentText(e.getMessage());
 			alert.show();

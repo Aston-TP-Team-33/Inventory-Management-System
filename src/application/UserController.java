@@ -11,6 +11,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -28,7 +29,7 @@ public class UserController implements Initializable {
     private TextField fullNameField;
 
     @FXML
-    private ChoiceBox<Integer> roleField;
+    private ChoiceBox<Integer> typeField;
 
     @FXML
     private Button btnUpdate;
@@ -37,19 +38,10 @@ public class UserController implements Initializable {
     private TextField emailField;
 
     @FXML
-    private TableColumn<User, String> passwordColumn;
-
-    @FXML
-    private TableColumn<User, String> usernameColumn;
-
-    @FXML
-    private TextField usernameField;
-
-    @FXML
     private TableColumn<User, String> fullNameColumn;
 
     @FXML
-    private TableColumn<User, Integer> roleColumn;
+    private TableColumn<User, Integer> typeColumn;
 
     @FXML
     private Button btnDelete;
@@ -61,14 +53,17 @@ public class UserController implements Initializable {
     private TableView<User> table;
 
     @FXML
-    private TextField passwordField;
+    private PasswordField passwordField;
 
     @FXML
     private TableColumn<User, Integer> idColumn;
 
     @FXML
     private TableColumn<User, String> emailColumn;
-
+    
+    @FXML
+    private TableColumn<User, String> passwordColumn;
+    
     /**
      * Takes the users input and adds it to the database
      * @param event
@@ -76,13 +71,12 @@ public class UserController implements Initializable {
     @FXML
     void add(ActionEvent event) {
     	String fullName = fullNameField.getText();
-    	String username = usernameField.getText();
     	String password = passwordField.getText();
     	String email = emailField.getText();
-    	Integer role = roleField.getValue();
+    	Integer type = typeField.getValue();
     	
     	// Make sure form was filled
-    	if(fullName.equals("") || username.equals("") || password.equals("") || email.equals("") || role == null) {
+    	if(fullName.equals("") || password.equals("") || email.equals("") || type == null) {
     		Alert alert = new Alert(Alert.AlertType.ERROR);
     		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 			alert.setContentText("Please fill the form.");
@@ -90,13 +84,16 @@ public class UserController implements Initializable {
     		return;
     	}
     	
-    	DBUtils.addUser(fullName, email, username, password, role);
-    	
+    	DBUtils.addUser(fullName, email, password, type);
 
     	resetFields();
     	updateTable();
     }
 
+	/**
+	 * Updates a use stored in the database
+	 * @param event
+	 */
 	@FXML
     void update(ActionEvent event) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -113,19 +110,18 @@ public class UserController implements Initializable {
 		
 		Integer id = user.getId();
     	String fullName = fullNameField.getText();
-    	String username = usernameField.getText();
     	String password = passwordField.getText();
     	String email = emailField.getText();
-    	Integer role = roleField.getValue();
+    	Integer type = typeField.getValue();
     	
     	// Make sure form was filled
-    	if(fullName.equals("") || username.equals("") || password.equals("") || email.equals("") || role == null) {
-			alert.setContentText("Please fill the form.");
+    	if(fullName.equals("") || email.equals("") || type == null) {
+			alert.setContentText("Please provide a name, email & type.");
 			alert.show();
     		return;
     	}
     	
-    	DBUtils.updateUser(id, fullName, email, username, password, role);
+    	DBUtils.updateUser(id, fullName, email, password, type);
     	
 
     	resetFields();
@@ -152,7 +148,7 @@ public class UserController implements Initializable {
     	Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		alert.setHeaderText("Are you sure?");
-		alert.setContentText("Are you sure you would like to delete " + user.getUsername() + " from the table?");
+		alert.setContentText("Are you sure you would like to delete " + user.getName() + " from the table?");
 		
 		if(alert.showAndWait().get() == ButtonType.OK) {
 			DBUtils.removeUser(user.getId());
@@ -169,11 +165,11 @@ public class UserController implements Initializable {
     	ObservableList<User> users = DBUtils.getUsers();
     	
     	idColumn.setCellValueFactory(new PropertyValueFactory<User, Integer>("id"));
-    	fullNameColumn.setCellValueFactory(new PropertyValueFactory<User, String>("fullName"));
+    	fullNameColumn.setCellValueFactory(new PropertyValueFactory<User, String>("name"));
     	emailColumn.setCellValueFactory(new PropertyValueFactory<User, String>("email"));
-    	usernameColumn.setCellValueFactory(new PropertyValueFactory<User, String>("username"));
-    	roleColumn.setCellValueFactory(new PropertyValueFactory<User, Integer>("role"));
+    	typeColumn.setCellValueFactory(new PropertyValueFactory<User, Integer>("type"));
     	passwordColumn.setCellValueFactory(new PropertyValueFactory<User, String>("password"));
+
     	
     	table.setItems(users);
     }
@@ -183,28 +179,26 @@ public class UserController implements Initializable {
      */
     private void resetFields() {
     	fullNameField.setText("");
-    	usernameField.setText("");
     	passwordField.setText("");
     	emailField.setText("");
-    	roleField.setValue(null);	
+    	typeField.setValue(null);	
 	}
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		// Setup role selection
-		Integer[] options = {0, 1};
-		roleField.getItems().addAll(options);
+		Integer[] options = {1, 2};
+		typeField.getItems().addAll(options);
 		
 		// Setup table
 		// Update text fields on click
 		table.setOnMouseClicked((MouseEvent event) ->{
 			User user = table.getSelectionModel().getSelectedItem();
 			if(user != null) {
-				fullNameField.setText(user.getFullName());
-				usernameField.setText(user.getUsername());
+				fullNameField.setText(user.getName());
 				emailField.setText(user.getEmail());
-				roleField.setValue(user.getRole());
-				passwordField.setText(user.getPassword());	
+				typeField.setValue(user.getType());
+				passwordField.setText("");	
 			}
 		});
 		

@@ -14,7 +14,7 @@ import javafx.scene.control.TextField;
  */
 public class LoginController {
 	@FXML
-	TextField usernameField;
+	TextField emailField;
 	@FXML
 	PasswordField passwordField;
 	@FXML
@@ -22,7 +22,7 @@ public class LoginController {
 	
 	public void login(ActionEvent event) {
 		try {			
-			DBUtils.loginUser(event, usernameField.getText(), passwordField.getText());
+			DBUtils.loginUser(event, emailField.getText(), passwordField.getText());
 		}catch(Exception e) {
 			Alert alert = new Alert(Alert.AlertType.ERROR);
 			alert.show();
