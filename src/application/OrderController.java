@@ -5,6 +5,9 @@ import java.net.URL;
 import java.util.Date;
 import java.util.ResourceBundle;
 
+import application.models.Order;
+import application.models.Product;
+import application.models.User;
 import db.DBUtils;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;

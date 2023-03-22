@@ -2,6 +2,7 @@ package application;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import application.models.User;
 import db.DBUtils;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;

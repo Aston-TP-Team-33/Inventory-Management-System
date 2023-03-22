@@ -12,9 +12,9 @@ import com.jcraft.jsch.Session;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import at.favre.lib.crypto.bcrypt.BCrypt.Verifyer;
-import application.Order;
-import application.Product;
-import application.User;
+import application.models.Order;
+import application.models.Product;
+import application.models.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;

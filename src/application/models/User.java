@@ -1,4 +1,4 @@
-package application;
+package application.models;
 
 /**
  * @author Remy Thompson

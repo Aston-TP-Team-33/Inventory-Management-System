@@ -1,4 +1,4 @@
-package application;
+package application.models;
 
 public class Order {
 	private int orderId;
