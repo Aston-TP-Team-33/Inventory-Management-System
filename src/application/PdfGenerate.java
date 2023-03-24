@@ -84,7 +84,27 @@ public class PdfGenerate {
             // Add the dispatched orders table to the document
             document.add(new Paragraph("The following orders need to be delivered:"));
             document.add(dispatchedOrdersTable);
-
+            
+            // Retrieve data from the inventorcy table
+            PreparedStatement inventoryStmt = onn.prepareStatement("SELECT * FROM products WHERE quantity < 5");
+            ResultSet inventoryResult = inventoryStmt.executeQuery();
+            
+            // Create a table for the low stock items
+            PdfPTable lowStockTable = new PdfPTable(2);
+            cell = new PdfPCell(new Paragraph("Item Name"));
+            lowStockTable.addCell(cell);
+            cell = new PdfPCell(new Paragraph("Stock Level"));
+            lowStockTable.addCell(cell);
+            
+            while (inventoryResult.next()) {
+                lowStockTable.addCell(inventoryResult.getString("title"));
+                lowStockTable.addCell(Integer.toString(inventoryResult.getInt("quantity")));
+            }
+            
+            // Add the low stock items table to the document
+            document.add(new Paragraph("The following items are low on stock (> 5 items):"));
+            document.add(lowStockTable);
+            
             // Close the document and the database connection
             document.close();
             conn.close();
