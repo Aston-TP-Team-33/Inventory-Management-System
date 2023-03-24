@@ -60,6 +60,30 @@ public class PdfGenerate {
             // Add the placed orders table to the document
             document.add(new Paragraph("The following items need to be dispatched:"));
             document.add(placedOrdersTable);
+            
+            // Retrieve data from the orders table
+            PreparedStatement dispatchedStmt = conn.prepareStatement("SELECT * FROM user_orders WHERE order_status='dispatched'");
+            ResultSet dispatchedResult = dispatchedStmt.executeQuery();
+            
+            // Create a table for the dispatched orders
+            PdfPTable dispatchedOrdersTable = new PdfPTable(3);
+            cell = new PdfPCell(new Paragraph("User ID"));
+            dispatchedOrdersTable.addCell(cell);
+            cell = new PdfPCell(new Paragraph("Customer Name"));
+            dispatchedOrdersTable.addCell(cell);
+            cell = new PdfPCell(new Paragraph("Order Total"));
+            dispatchedOrdersTable.addCell(cell);
+            
+            while (dispatchedResult.next()) {
+                dispatchedOrdersTable.addCell
+                (Integer.toString(dispatchedResult.getInt("user_id")));
+                dispatchedOrdersTable.addCell(dispatchedResult.getString("name"));
+                dispatchedOrdersTable.addCell(Double.toString(dispatchedResult.getDouble("price")));
+                }
+            
+            // Add the dispatched orders table to the document
+            document.add(new Paragraph("The following orders need to be delivered:"));
+            document.add(dispatchedOrdersTable);
 
             // Close the document and the database connection
             document.close();
