@@ -1,7 +1,6 @@
 package application;
 import java.io.FileOutputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -11,59 +10,34 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
 
+
+import db.DBUtils;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+
+/**
+ * @author Shoaib Azad & Remy Thompson
+ *
+ */
 public class PdfGenerate {
-
-        // Connect to the database
-	public static Connection getConnection(){
-		// SSH Info
-		String sshHost = "cs2410-web01pvm.aston.ac.uk"; 
-		String sshUsername = "u-210151525"; 
-		String sshPassword = "LtRKNSRcD+kQQ+j+";
-		int sshPort = 22; 
-		
-		// DB Info
-		String databaseHost = "localhost";
-		int databasePort = 3306;
-		String databaseUsername = "u-210151525"; 
-		String databasePassword = "eIbZxnt2MeJkJiT";
-		String databaseName = "u_210151525_laravel";
-		
-		Connection connection = null;
-		
-		try {
-		    // Create SSH connection
-		    JSch jsch = new JSch();
-		    Session session = jsch.getSession(sshUsername, sshHost, sshPort);
-		    session.setPassword(sshPassword);
-		    session.setConfig("StrictHostKeyChecking", "no");
-		    session.connect();
-
-		    int tunnelLocalPort = 0; // replace with a local port number that is not already in use
-		    int tunnelRemotePort = databasePort;
-		    String tunnelRemoteHost = databaseHost;
-		    int assignedPort = session.setPortForwardingL(tunnelLocalPort, tunnelRemoteHost, tunnelRemotePort);
-
-		    String url = "jdbc:mysql://localhost:" + assignedPort + "/" + databaseName;
-		    connection = DriverManager.getConnection(url, databaseUsername, databasePassword);
-		    
-		} catch (Exception e) {
-		    // handle any errors that occur
-			e.printStackTrace();
-		}
-		
-	    return connection;
-	}
-
-    public static void generateReport() {
+	
+    @FXML
+    private Button generateButton;
+	
+	/**
+	 * Generates a report informing the admin on the current status of the stock & orders
+	 * @param event
+	 */
+	@FXML
+    void generateReport(ActionEvent event) {
         // Create a new PDF document
         Document document = new Document(PageSize.A4);
-	Connection connection = null;
+        Connection connection = null;
         try {
-	    connection = getConnection();
-            PdfWriter.getInstance(document, new FileOutputStream("report.pdf"));
+        	connection = DBUtils.getConnection();
+            PdfWriter.getInstance(document, new FileOutputStream("./report.pdf"));
             document.open();
 
             // Add a title to the document
@@ -118,7 +92,7 @@ public class PdfGenerate {
             document.add(new Paragraph("The following orders need to be delivered:"));
             document.add(dispatchedOrdersTable);
 
-            // Retrieve data from the inventorcy table
+            // Retrieve data from the inventory table
             PreparedStatement inventoryStmt = connection.prepareStatement("SELECT * FROM products WHERE quantity < 5");
             ResultSet inventoryResult = inventoryStmt.executeQuery();
 
