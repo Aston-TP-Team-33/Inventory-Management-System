@@ -42,8 +42,8 @@ public class SidebarController {
     }
 
     @FXML
-    void inventoryPage(MouseEvent  event) {
-    	loadPage("inventory");
+    void reportPage(MouseEvent  event) {
+    	loadPage("report");
     }
 
     /**

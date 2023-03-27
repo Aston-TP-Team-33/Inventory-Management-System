@@ -48,24 +48,31 @@ public class PdfGenerate {
             PreparedStatement ordersStmt = connection.prepareStatement("SELECT * FROM user_orders WHERE order_status='Placed'");
             ResultSet ordersResult = ordersStmt.executeQuery();
 
-            // Create a table for the placed orders
-            PdfPTable placedOrdersTable = new PdfPTable(3);
+            // Create a table for the placed orders            
+            PdfPTable placedOrdersTable = new PdfPTable(5);
             PdfPCell cell;
-            cell = new PdfPCell(new Paragraph("User ID"));
+            cell = new PdfPCell(new Paragraph("Order ID"));
             placedOrdersTable.addCell(cell);
-            cell = new PdfPCell(new Paragraph("Customer Name"));
+            cell = new PdfPCell(new Paragraph("City"));
+            placedOrdersTable.addCell(cell);
+            cell = new PdfPCell(new Paragraph("House Number"));
+            placedOrdersTable.addCell(cell);
+            cell = new PdfPCell(new Paragraph("Street Name"));
             placedOrdersTable.addCell(cell);
             cell = new PdfPCell(new Paragraph("Order Total"));
             placedOrdersTable.addCell(cell);
 
             while (ordersResult.next()) {
-            	placedOrdersTable.addCell(Integer.toString(ordersResult.getInt("user_id")));
-            	placedOrdersTable.addCell(ordersResult.getString("name"));
-                placedOrdersTable.addCell(Double.toString(ordersResult.getDouble("price")));
+            	placedOrdersTable.addCell(ordersResult.getString("id"));
+            	placedOrdersTable.addCell(ordersResult.getString("city"));
+            	placedOrdersTable.addCell(ordersResult.getString("house_number"));
+            	placedOrdersTable.addCell(ordersResult.getString("street"));
+                placedOrdersTable.addCell("£" + ordersResult.getString("price"));
             }
 
             // Add the placed orders table to the document
             document.add(new Paragraph("The following items need to be dispatched:"));
+            document.add(new Paragraph("\n"));
             document.add(placedOrdersTable);
 
             // Retrieve data from the orders table
@@ -73,43 +80,53 @@ public class PdfGenerate {
             ResultSet dispatchedResult = dispatchedStmt.executeQuery();
 
             // Create a table for the dispatched orders
-            PdfPTable dispatchedOrdersTable = new PdfPTable(3);
-            cell = new PdfPCell(new Paragraph("User ID"));
+            PdfPTable dispatchedOrdersTable = new PdfPTable(5);
+            cell = new PdfPCell(new Paragraph("Order ID"));
             dispatchedOrdersTable.addCell(cell);
-            cell = new PdfPCell(new Paragraph("Customer Name"));
+            cell = new PdfPCell(new Paragraph("City"));
+            dispatchedOrdersTable.addCell(cell);
+            cell = new PdfPCell(new Paragraph("House Number"));
+            dispatchedOrdersTable.addCell(cell);
+            cell = new PdfPCell(new Paragraph("Street Name"));
             dispatchedOrdersTable.addCell(cell);
             cell = new PdfPCell(new Paragraph("Order Total"));
             dispatchedOrdersTable.addCell(cell);
 
             while (dispatchedResult.next()) {
-                dispatchedOrdersTable.addCell
-                (Integer.toString(dispatchedResult.getInt("user_id")));
-                dispatchedOrdersTable.addCell(dispatchedResult.getString("name"));
-                dispatchedOrdersTable.addCell(Double.toString(dispatchedResult.getDouble("price")));
-                }
+                dispatchedOrdersTable.addCell(dispatchedResult.getString("id"));
+                dispatchedOrdersTable.addCell(dispatchedResult.getString("city"));
+                dispatchedOrdersTable.addCell(dispatchedResult.getString("house_number"));
+                dispatchedOrdersTable.addCell(dispatchedResult.getString("street"));
+                dispatchedOrdersTable.addCell("£" + dispatchedResult.getString("price"));
+            }
 
             // Add the dispatched orders table to the document
             document.add(new Paragraph("The following orders need to be delivered:"));
+            document.add(new Paragraph("\n"));
             document.add(dispatchedOrdersTable);
 
             // Retrieve data from the inventory table
-            PreparedStatement inventoryStmt = connection.prepareStatement("SELECT * FROM products WHERE quantity < 5");
+            PreparedStatement inventoryStmt = connection.prepareStatement("SELECT * FROM products WHERE quantity <= 5");
             ResultSet inventoryResult = inventoryStmt.executeQuery();
 
             // Create a table for the low stock items
-            PdfPTable lowStockTable = new PdfPTable(2);
+            PdfPTable lowStockTable = new PdfPTable(3);
+            cell = new PdfPCell(new Paragraph("Item ID"));
+            lowStockTable.addCell(cell);
             cell = new PdfPCell(new Paragraph("Item Name"));
             lowStockTable.addCell(cell);
             cell = new PdfPCell(new Paragraph("Stock Level"));
             lowStockTable.addCell(cell);
 
             while (inventoryResult.next()) {
-                lowStockTable.addCell(inventoryResult.getString("title"));
-                lowStockTable.addCell(Integer.toString(inventoryResult.getInt("quantity")));
+            	lowStockTable.addCell(inventoryResult.getString("id"));
+            	lowStockTable.addCell(inventoryResult.getString("title"));
+                lowStockTable.addCell(inventoryResult.getString("quantity"));
             }
 
             // Add the low stock items table to the document
-            document.add(new Paragraph("The following items are low on stock (> 5 items):"));
+            document.add(new Paragraph("The following items are low on stock (<= 5 items):"));
+            document.add(new Paragraph("\n"));
             document.add(lowStockTable);
 
             // Close the document and the database connection
