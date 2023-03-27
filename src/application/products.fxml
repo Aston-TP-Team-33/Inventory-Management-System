@@ -56,7 +56,7 @@
             </Label>
          </children>
       </Pane>
-      <TableView fx:id="table" layoutX="280.0" layoutY="65.0" minHeight="298.0" minWidth="452.0" prefHeight="435.0" prefWidth="600.0">
+      <TableView fx:id="table" layoutX="280.0" layoutY="118.0" minHeight="298.0" minWidth="452.0" prefHeight="382.0" prefWidth="600.0">
         <columns>
           <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID" />
             <TableColumn fx:id="titleColumn" prefWidth="75.0" text="Title" />
@@ -67,5 +67,11 @@
             <TableColumn fx:id="categoryColumn" prefWidth="75.0" text="Category" />
         </columns>
       </TableView>
+      <TextField fx:id="searchField" layoutX="400.0" layoutY="71.0" prefHeight="25.0" prefWidth="449.0" />
+      <Label layoutX="314.0" layoutY="70.0" text="Search:" textFill="WHITE">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>

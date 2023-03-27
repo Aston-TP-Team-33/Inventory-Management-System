@@ -6,6 +6,8 @@ import java.util.ResourceBundle;
 import application.models.Product;
 import db.DBUtils;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -74,7 +76,10 @@ public class ProductController implements Initializable {
 
     @FXML
     private TableColumn<Product, String> descriptionColumn;
-
+    
+    @FXML
+    private TextField searchField;
+    
     @FXML
     void add(ActionEvent event) {
     	String title = titleField.getText();
@@ -175,7 +180,36 @@ public class ProductController implements Initializable {
     	quantityColumn.setCellValueFactory(new PropertyValueFactory<Product, Integer>("quantity"));
     	titleColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("title"));
     	
-    	table.setItems(products);
+    	// Search for products
+    	// Show all products by default 
+    	FilteredList<Product> filteredProducts = new FilteredList<Product>(products, product -> true);
+    	
+    	// Update table when text is entered
+		searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+			filteredProducts.setPredicate(product -> {
+				// If nothing is entered return true
+				if (newValue == null || newValue.isEmpty()) {
+					return true;
+				}
+				
+				// If title matches return true
+				if (product.getTitle().toLowerCase().contains(newValue.toLowerCase())) {
+					return true;  
+				} 
+				// Else if ID matches return true
+				else if (Integer.toString(product.getId()).contains(newValue)) {
+					return true; 
+				}
+				
+				// No match
+				return false; 
+			});
+		});
+    	
+		SortedList<Product> sortedProducts = new SortedList<>(filteredProducts);
+		sortedProducts.comparatorProperty().bind(table.comparatorProperty());
+		
+		table.setItems(sortedProducts);
     }
     
     private void resetFields() {
