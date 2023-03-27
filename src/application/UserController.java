@@ -2,9 +2,12 @@ package application;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import application.models.Product;
 import application.models.User;
 import db.DBUtils;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -64,6 +67,9 @@ public class UserController implements Initializable {
     
     @FXML
     private TableColumn<User, String> passwordColumn;
+    
+    @FXML
+    private TextField searchField;
     
     /**
      * Takes the users input and adds it to the database
@@ -171,8 +177,39 @@ public class UserController implements Initializable {
     	typeColumn.setCellValueFactory(new PropertyValueFactory<User, Integer>("type"));
     	passwordColumn.setCellValueFactory(new PropertyValueFactory<User, String>("password"));
 
+    	// Search for users
+    	// Show all users by default 
+    	FilteredList<User> filteredUsers = new FilteredList<User>(users, user -> true);
     	
-    	table.setItems(users);
+    	// Update table when text is entered
+		searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+			filteredUsers.setPredicate(user -> {
+				// If nothing is entered return true
+				if (newValue == null || newValue.isEmpty()) {
+					return true;
+				}
+				
+				// If name matches return true
+				if (user.getName().toLowerCase().contains(newValue.toLowerCase())) {
+					return true;  
+				} 
+				// Else if ID matches return true
+				else if (Integer.toString(user.getId()).contains(newValue)) {
+					return true; 
+				}
+				// Else if email matches return true 
+				else if(user.getEmail().contains(newValue)) {
+					return true;
+				}
+				// No match
+				return false; 
+			});
+		});
+    	
+		SortedList<User> sortedUsers = new SortedList<>(filteredUsers);
+		sortedUsers.comparatorProperty().bind(table.comparatorProperty());
+		
+		table.setItems(sortedUsers);    	
     }
     
     /**
@@ -183,6 +220,7 @@ public class UserController implements Initializable {
     	passwordField.setText("");
     	emailField.setText("");
     	typeField.setValue(null);	
+    	searchField.setText("");
 	}
 
 	@Override

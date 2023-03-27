@@ -67,7 +67,7 @@
             <TableColumn fx:id="categoryColumn" prefWidth="75.0" text="Category" />
         </columns>
       </TableView>
-      <TextField fx:id="searchField" layoutX="400.0" layoutY="71.0" prefHeight="25.0" prefWidth="449.0" />
+      <TextField fx:id="searchField" layoutX="400.0" layoutY="71.0" prefHeight="25.0" prefWidth="449.0" promptText="Search by Title or ID" />
       <Label layoutX="314.0" layoutY="70.0" text="Search:" textFill="WHITE">
          <font>
             <Font size="18.0" />

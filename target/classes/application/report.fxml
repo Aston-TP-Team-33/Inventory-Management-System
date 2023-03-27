@@ -7,7 +7,7 @@
 
 <AnchorPane minHeight="500.0" prefHeight="500.0" style="-fx-background-color: #14242B;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.PdfGenerate">
    <children>
-      <Text fill="WHITE" layoutX="280.0" layoutY="149.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Use the button below to generate a report on the current status of orders and products that are low on stock. This will be in the form of a pdf and stored in the project folder" wrappingWidth="535.2724609375">
+      <Text fill="WHITE" layoutX="280.0" layoutY="149.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Use the button below to generate a report on the current status of orders and products that are low on stock. This will be in the form of a pdf and stored in the project folder" textAlignment="CENTER" wrappingWidth="535.2724609375">
          <font>
             <Font size="18.0" />
          </font>

@@ -219,6 +219,7 @@ public class ProductController implements Initializable {
     	priceField.setText("");	
     	quantityField.setText(null);
     	imageField.setText("");
+    	searchField.setText("");
 	}
 
 	@Override

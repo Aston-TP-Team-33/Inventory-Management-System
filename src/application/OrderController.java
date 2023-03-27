@@ -10,6 +10,8 @@ import application.models.Product;
 import application.models.User;
 import db.DBUtils;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -87,6 +89,8 @@ public class OrderController implements Initializable{
     @FXML
     private TextField streetField;
     
+    @FXML
+    private TextField searchField;
     
     /**
      * Loads list of products for selected order
@@ -253,7 +257,33 @@ public class OrderController implements Initializable{
     	postcodeColumn.setCellValueFactory(new PropertyValueFactory<Order, String>("postcode"));
     	houseNumberColumn.setCellValueFactory(new PropertyValueFactory<Order, Integer>("houseNumber"));
     	streetColumn.setCellValueFactory(new PropertyValueFactory<Order, String>("street"));
-    	table.setItems(orders);
+    	
+    	// Search for users
+    	// Show all users by default 
+    	FilteredList<Order> filteredOrders = new FilteredList<Order>(orders, order -> true);
+    	
+    	// Update table when text is entered
+		searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+			filteredOrders.setPredicate(order -> {
+				// If nothing is entered return true
+				if (newValue == null || newValue.isEmpty()) {
+					return true;
+				}
+ 
+				//  if ID matches return true
+				else if (Integer.toString(order.getUserId()).contains(newValue)) {
+					return true; 
+				}
+
+				// No match
+				return false; 
+			});
+		});
+    	
+		SortedList<Order> sortedOrders = new SortedList<>(filteredOrders);
+		sortedOrders.comparatorProperty().bind(table.comparatorProperty());
+		
+		table.setItems(sortedOrders);     	
     }
     
     private void resetFields() {
@@ -262,6 +292,7 @@ public class OrderController implements Initializable{
     	cityField.setText("");
     	postcodeField.setText("");
     	streetField.setText("");
+    	searchField.setText("");
     }
     
 	@Override
