@@ -3,7 +3,6 @@ package application;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import application.models.Order;
 import application.models.UserQuery;
 import db.DBUtils;
 import javafx.collections.ObservableList;
