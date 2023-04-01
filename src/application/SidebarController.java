@@ -45,6 +45,11 @@ public class SidebarController {
     void reportPage(MouseEvent  event) {
     	loadPage("report");
     }
+    
+    @FXML
+    void queryPage(MouseEvent  event) {
+    	loadPage("userQueries");
+    }
 
     /**
      * Loads the replace the current page with the page the user clicked on

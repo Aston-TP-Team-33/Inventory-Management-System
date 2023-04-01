@@ -270,10 +270,11 @@ public class OrderController implements Initializable{
 					return true;
 				}
  
-				//  if ID matches return true
+				//  if User ID matches return true
 				else if (Integer.toString(order.getUserId()).contains(newValue)) {
 					return true; 
 				}
+				
 
 				// No match
 				return false; 

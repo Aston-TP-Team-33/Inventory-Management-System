@@ -48,7 +48,7 @@
             <TextField fx:id="streetField" layoutX="100.0" layoutY="114.0" />
             <TextField fx:id="postcodeField" layoutX="100.0" layoutY="64.0" />
             <TextField fx:id="cityField" layoutX="100.0" layoutY="14.0" />
-            <Button fx:id="btnSeeProduct1" layoutY="420.0" mnemonicParsing="false" onAction="#seeUser" prefHeight="25.0" prefWidth="255.0" text="See User" />
+            <Button fx:id="btnSeeProduct" layoutY="420.0" mnemonicParsing="false" onAction="#seeUser" prefHeight="25.0" prefWidth="255.0" text="See User" />
          </children>
       </Pane>
       <TableView fx:id="table" layoutX="280.0" layoutY="118.0" minHeight="298.0" minWidth="452.0" prefHeight="382.0" prefWidth="600.0">

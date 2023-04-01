@@ -15,6 +15,7 @@ import at.favre.lib.crypto.bcrypt.BCrypt.Verifyer;
 import application.models.Order;
 import application.models.Product;
 import application.models.User;
+import application.models.UserQuery;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -41,8 +42,6 @@ public class DBUtils {
 	 */
 	public static void changeScene(ActionEvent event, String title, String fxmlFile) {
 		Parent root = null;
-		
-		
 		try {
 			FXMLLoader loader = new FXMLLoader(DBUtils.class.getResource(fxmlFile));
 			root = loader.load();
@@ -72,6 +71,8 @@ public class DBUtils {
 		String databaseName = "u_210151525_laravel";
 		
 		Connection connection = null;
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		
 		try {
 			// Create SSH connection
@@ -93,6 +94,8 @@ public class DBUtils {
 //		    session.disconnect();
 		} catch (Exception e) {
 		    // handle any errors that occur
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
 			e.printStackTrace();
 		}
 		
@@ -115,8 +118,6 @@ public class DBUtils {
 		
 		try {
 			// Connect to database
-			//TODO connect to host database
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			connection = getConnection();
 			
 			// Query user
@@ -180,9 +181,7 @@ public class DBUtils {
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		
 		// Connect to database
-		//TODO connect to host database
 		try {
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			connection = getConnection();
 			
 			// Hash users password 
@@ -222,8 +221,6 @@ public class DBUtils {
 		
 		try {
 			// Connect to database
-			//TODO connect to host database
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
 			connection = getConnection();
 			// Query users
 			getUsers = connection.createStatement();
@@ -263,9 +260,7 @@ public class DBUtils {
 		Connection connection = null;
 		PreparedStatement deleteUser = null;
 		// Connect to database
-		//TODO connect to host database
 		try {
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			connection = getConnection();
 			
 			// Prepare statement to add user
@@ -299,9 +294,7 @@ public class DBUtils {
 		Connection connection = null;
 		PreparedStatement updateUser = null;
 		// Connect to database
-		//TODO connect to host database
 		try {
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			connection = getConnection();
 			
 			// Prepare statement to add user
@@ -343,12 +336,10 @@ public class DBUtils {
 		Connection connection = null;
 		PreparedStatement updateUser = null;
 		// Connect to database
-		//TODO connect to host database
 		try {
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			connection = getConnection();
 			
-			// Prepare statement to add user
+			// Prepare statement to update user
 			updateUser = connection.prepareStatement("UPDATE users SET `name` = ?, `email` = ?, `type` = ? WHERE id = ?;");
 			
 			updateUser.setString(1, name);
@@ -378,8 +369,6 @@ public class DBUtils {
 		
 		try {
 			// Connect to database
-			//TODO connect to host database
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
 			connection = getConnection();
 			
 			// Query users
@@ -422,9 +411,7 @@ public class DBUtils {
 		Connection connection = null;
 		PreparedStatement deleteOrder = null;
 		// Connect to database
-		//TODO connect to host database
 		try {
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			connection = getConnection();
 			
 			// Prepare statement to add user
@@ -447,14 +434,12 @@ public class DBUtils {
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		
 		// Connect to database
-		//TODO connect to host database
 		Connection connection = null;
 		PreparedStatement seeUser = null;
 		
 		ObservableList<User> users = FXCollections.observableArrayList();
 		
 		try {
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");		
 			connection = getConnection();
 			
 			// Prepare statement to get products associated with current order
@@ -489,14 +474,12 @@ public class DBUtils {
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		
 		// Connect to database
-		//TODO connect to host database
 		Connection connection = null;
 		PreparedStatement seeProduct = null;
 		
 		ObservableList<Product> products = FXCollections.observableArrayList();
 		
 		try {
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");		
 			connection = getConnection();
 			
 			// Prepare statement to get products associated with current order
@@ -535,9 +518,7 @@ public class DBUtils {
 		Connection connection = null;
 		PreparedStatement updateOrder = null;
 		// Connect to database
-		//TODO connect to host database
 		try {
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			connection = getConnection();
 			
 			// Prepare statement to add order
@@ -577,8 +558,6 @@ public class DBUtils {
 		
 		try {
 			// Connect to database
-			//TODO connect to host database
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");	
 			connection = getConnection();
 			
 			// Query products
@@ -626,9 +605,7 @@ public class DBUtils {
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		
 		// Connect to database
-		//TODO connect to host database
 		try {
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			connection = getConnection();
 			
 			// Prepare statement to add product
@@ -660,9 +637,7 @@ public class DBUtils {
 		PreparedStatement deleteProduct = null;
 		
 		// Connect to database
-		//TODO connect to host database
 		try {
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			connection = getConnection();
 			
 			// Delete from inventory table - this will automatically delete it from the product table also
@@ -688,9 +663,7 @@ public class DBUtils {
 		PreparedStatement updateProduct = null;
 		
 		// Connect to database
-		//TODO connect to host database
 		try {
-			//connection = DriverManager.getConnection("jdbc:mysql://localhost/group33", "root", "");
 			connection = getConnection();
 			
 			// Prepare statement to update tables
@@ -711,7 +684,43 @@ public class DBUtils {
 		}catch(Exception e) {
 			alert.setContentText("An unexpected error has occured.");
 			alert.show();
-		}
+		}		
+	}
+	
+	public static ObservableList<UserQuery> getQueries(){
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		
+		Connection connection = null;
+		Statement getQueries = null;
+			
+		ObservableList<UserQuery> queryList = FXCollections.observableArrayList();
+		
+		try {
+			// Connect to database
+			connection = getConnection();
+			// Query users
+			getQueries = connection.createStatement();
+			ResultSet rs = getQueries.executeQuery("SELECT * FROM user_queries");
+			
+			// Add to list
+			while(rs.next()) {
+				int id = rs.getInt("id");
+				String name = rs.getString("name");
+				String email = rs.getString("email");
+				String query = rs.getString("query");
+				
+				UserQuery newQuery = new UserQuery(name, email, query, id);
+				queryList.add(newQuery);
+			}			
+		} catch(SQLException e) {
+			alert.setContentText(e.getMessage());
+			alert.show();
+		} catch(Exception e) {
+			alert.setContentText("An unexpected error has occured.");
+			alert.show();
+		}
+
+		return queryList;
 	}
 }

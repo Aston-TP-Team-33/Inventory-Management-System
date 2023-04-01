@@ -31,6 +31,11 @@
                   <Font size="15.0" />
                </font>
             </Button>
+            <Button layoutX="10.0" layoutY="157.0" mnemonicParsing="false" onMouseClicked="#queryPage" prefHeight="49.0" prefWidth="123.0" style="-fx-background-color: transparent; -fx-border-color: white; -fx-border-width: 0px 0px 2px 0px;" text="Queries" textFill="WHITE">
+               <font>
+                  <Font size="15.0" />
+               </font>
+            </Button>
             <Button layoutX="10.0" layoutY="157.0" mnemonicParsing="false" onMouseClicked="#reportPage" prefHeight="49.0" prefWidth="123.0" style="-fx-background-color: transparent; -fx-border-color: white; -fx-border-width: 0px 0px 2px 0px;" text="Report" textFill="WHITE">
                <font>
                   <Font size="15.0" />
