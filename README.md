@@ -16,10 +16,45 @@ The project is only open to admins so customer accoutns will not be able to acce
 
 ## Dependencies
 The following dependencies are needed to run the project. They're included in the pom.xml file.
-- JavaFX
-- Bcrypt 
-- 
+- JavaFX (Details below)
+- Bcrypt (included in pom.xml)
+- JSch (included in pom.xml)
+- mysql-connector-java (included in pom.xml)
+- iTextPDF (included in pom.xml)
 
 ## Project Structure 
+- All of the projects source code is stored in the `src` directory
+- It contains 4 packages:
+  - `application` - FXML files & Controllers for the main application
+  - `application.model`- Java classes which model the database tables 
+  - `db` - All of the code for querying the database 
+  - `login` - The initial login screen
 
 ## How To Run
+These instructions were written using Windows but should work on other OS
+
+### 1 - Downloading project
+1. Open eclipse
+2. File -> Import -> Git -> Projects from Git 
+3. Clone URI
+4. Copy and paste the GitHub URL 
+5. Select main 
+6. Continue following setup until project is in eclipse  
+
+### 2 - Download JavaFX SDK
+1. Download JavaFX 17.0.6 SDK from [here](https://gluonhq.com/products/javafx/). Make sure you remember where you downloaded it to
+2. Extract the folder
+3. In Eclipse go to Window -> Java -> Build Path -> User Library 
+4. Click new & name the library "JavaFX"
+5. Select add External JARs, navigate to the `lib` folder in your JavaFX download and select all the JARs
+6. Save & Close 
+
+### 3 - Download Extension
+1. Help -> Eclipse Marketplace
+2. Search for & install e(fx)clipse
+
+### 4 - Update VM arguments
+1. Once the extension has installed right click the project -> run as... -> run configurations 
+2. Go to arguments and paste this into VM arguments `--module-path /path/to/javafx-sdk-20/lib --add-modules javafx.controls,javafx.fxml`
+
+[This video should help with the steps above](https://www.youtube.com/watch?v=_7OM-cMYWbQ)
