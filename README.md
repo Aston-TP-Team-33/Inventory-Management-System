@@ -59,3 +59,12 @@ https://marketplace.eclipse.org/content/efxclipse
 2. Go to arguments and paste this into VM arguments `--module-path /path/to/javafx-sdk-20/lib --add-modules javafx.controls,javafx.fxml`
 
 [This video should help with the steps above](https://www.youtube.com/watch?v=_7OM-cMYWbQ)
+
+### Potential Errors
+After folowing the steps above you're sometimes met with an error "no location set". Simply making a change to the string on line 17 and undoing it in Main.java seems to fix it. 
+
+The line should look like this `FXMLLoader loader = new FXMLLoader(getClass().getResource("../login/login.fxml"));` before and after the change. 
+
+Alternatively you could change the line to `FXMLLoader loader = new FXMLLoader(getClass().getResource("./../login/login.fxml"));`
+
+This bug only seems to occur when the project is first imported regardless of what the string is initially. 
