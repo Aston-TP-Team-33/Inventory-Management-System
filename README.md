@@ -52,6 +52,7 @@ These instructions were written using Windows but should work on other OS
 ### 3 - Download Extension
 1. Help -> Eclipse Marketplace
 2. Search for & install e(fx)clipse
+https://marketplace.eclipse.org/content/efxclipse
 
 ### 4 - Update VM arguments
 1. Once the extension has installed right click the project -> run as... -> run configurations 
