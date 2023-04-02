@@ -60,7 +60,7 @@ https://marketplace.eclipse.org/content/efxclipse
 
 [This video should help with the steps above](https://www.youtube.com/watch?v=_7OM-cMYWbQ)
 
-### Potential Errors
+## Potential Errors
 After folowing the steps above you're sometimes met with an error "no location set". Simply making a change to the string on line 17 and undoing it in Main.java seems to fix it. 
 
 The line should look like this `FXMLLoader loader = new FXMLLoader(getClass().getResource("../login/login.fxml"));` before and after the change. 
